@@ -12,8 +12,10 @@ BS_FL_CONTROLLERS_PORT=${BS_FL_CONTROLLERS_PORT:-localhost:80}
 BS_FL_OF_PORT=${BS_FL_OF_PORT:-6633}
 
 function install_contrail() {
+    C_UID=$( id -u )
+    C_GID= $( id -g )
     sudo mkdir -p /var/log/contrail
-    sudo chmod 777 /var/log/contrail
+    sudo chown $C_UID:$C_GUID /var/log/contrail
 
     # basic dependencies
     if ! which repo > /dev/null 2>&1 ; then
@@ -51,7 +53,9 @@ function install_contrail() {
 
     CONTRAIL_REPO_PROTO=${CONTRAIL_REPO_PROTO:-ssh}
     CONTRAIL_SRC=${CONTRAIL_SRC:-/opt/stack/contrail}
-    mkdir -p $CONTRAIL_SRC
+    sudo mkdir -p $CONTRAIL_SRC
+    sudo chown $C_UID:$C_GUID $CONTRAIL_SRC
+    
     contrail_cwd=$(pwd)
     cd $CONTRAIL_SRC
     if [ ! -d $CONTRAIL_SRC/.repo ]; then
