@@ -197,18 +197,6 @@ function test_install_cassandra_patch() {
     apply_patch $TOP_DIR/contrail/cassandra-env.sh.patch /etc/cassandra sudo
 }
 
-function test_install_neutron_patch() { 
-    apply_patch $TOP_DIR/contrail/neutron_v4.patch $DEST/neutron
-}   
-
-function test_install_nova_patch() { 
-    apply_patch $TOP_DIR/contrail/nova_v4.patch $DEST/nova
-    if [ -e $DEST/nova/plugins/contrail/config_parser.py ]; then
-        sudo cp $DEST/nova/plugins/contrail/config_parser.py /usr/bin/config_parser
-        sudo chmod +x /usr/bin/config_parser
-    fi
-}   
-
 # take over physical interface
 function insert_vrouter() {
     source /etc/contrail/agent_param
