@@ -37,6 +37,7 @@ function install_contrail() {
 	sudo yum -y install expat-devel gettext-devel curl-devel
 	sudo yum -y install gcc-c++ python-devel autoconf automake libtool
 	sudo yum -y install libevent libevent-devel libxml2-devel libxslt-devel
+	sudo yum -y install openssl-devel
 	sudo yum -y install tunctl
 	sudo yum -y install redis
 	sudo yum -y install java-1.7.0-openjdk
