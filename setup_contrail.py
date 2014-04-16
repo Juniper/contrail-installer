@@ -556,8 +556,8 @@ HWADDR=%s
                              '__contrail_disc_server_port__': '5998',
                             }
             self._template_substitute_write(svc_monitor_conf_template,
-                                            template_vals, temp_dir_name + '/svc_monitor.conf')
-            self.run_shell("sudo mv %s/svc_monitor.conf /etc/contrail/svc_monitor.conf" %(temp_dir_name))
+                                            template_vals, temp_dir_name + '/svc-monitor.conf')
+            self.run_shell("sudo mv %s/svc-monitor.conf /etc/contrail/svc-monitor.conf" %(temp_dir_name))
 
             template_vals = {
                              '__contrail_zk_server_ip__': '127.0.0.1',
