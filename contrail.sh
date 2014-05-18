@@ -29,6 +29,7 @@ function install_contrail() {
 	apt_get install patch scons flex bison make vim unzip
 	apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
 	apt_get install python-dev autoconf automake build-essential libtool
+        apt_get install python-lxml
 	apt_get install libevent-dev libxml2-dev libxslt-dev
 	apt_get install uml-utilities
 	apt_get install redis-server
