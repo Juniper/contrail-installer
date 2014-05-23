@@ -29,6 +29,9 @@ CONTRAIL_ADMIN_USERNAME=${CONTRAIL_ADMIN_USERNAME:-admin}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-contrail123}
 CONTRAIL_ADMIN_TENANT=${CONTRAIL_ADMIN_TENANT:-admin}
 CFGM_IP=${SERVICE_HOST:-127.0.0.1}
+if [[ $CFGM_IP = "locahost" ]] ; then
+    CFGM_IP="127.0.0.1"
+fi
 USE_CERTS=${USE_CERTS:-false}
 MULTI_TENANCY=${MULTI_TENANCY:-false}
 PUPPET_SERVER=${PUPPET_SERVER:-''}
@@ -220,12 +223,12 @@ function download_cassandra {
     if ! which cassandra > /dev/null 2>&1 ; then
         if is_ubuntu; then
             apt_get install python-software-properties
-            sudo add-apt-repository -y ppa:nilarimogard/webupd8
+            sudo -E add-apt-repository -y ppa:nilarimogard/webupd8
             apt_get update
             apt_get install launchpad-getkeys
 
             # use oracle Java 7 instead of OpenJDK
-            sudo add-apt-repository -y ppa:webupd8team/java
+            sudo -E add-apt-repository -y ppa:webupd8team/java
             apt_get update
             echo debconf shared/accepted-oracle-license-v1-1 select true | \
             sudo debconf-set-selections
@@ -351,11 +354,15 @@ function build_contrail() {
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if [[ $(read_stage) == "fetch-packages" ]]; then
             sudo scons --opt=production
+            ret_val=$?
+            [[ $ret_val -ne 0 ]] && exit
             change_stage "fetch-packages" "Build"
        fi
     elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
         if [[ $(read_stage) == "fetch-packages" ]]; then
             sudo scons --opt=production compute-node-install
+            ret_val=$?
+            [[ $ret_val -ne 0 ]] && exit
             change_stage "fetch-packages" "Build"          
         fi
     else
@@ -375,6 +382,8 @@ function install_contrail() {
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if [[ $(read_stage) == "Build" ]]; then
             sudo scons --opt=production install
+            ret_val=$?
+            [[ $ret_val -ne 0 ]] && exit
             cd ${contrail_cwd}
 
             # install contrail modules
@@ -404,6 +413,8 @@ function install_contrail() {
     elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
         if [[ $(read_stage) == "Build" ]]; then
             sudo scons --opt=production compute-node-install
+            ret_val=$?
+            [[ $ret_val -ne 0 ]] && exit
             cd ${contrail_cwd}
 
             # install contrail modules
@@ -536,8 +547,7 @@ function pywhere() {
 }
 
 function start_contrail() {
-    # save screen settings
-    SAVED_SCREEN_NAME=$SCREEN_NAME
+   
     # save screen settings
     SAVED_SCREEN_NAME=$SCREEN_NAME
     SCREEN_NAME="contrail"
@@ -548,9 +558,7 @@ function start_contrail() {
         SCREEN_HARDSTATUS='%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'
     fi 
     screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
-
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
-    
         if is_ubuntu; then
             REDIS_CONF="/etc/redis/redis.conf"
             CASS_PATH="/usr/sbin/cassandra"
@@ -686,20 +694,23 @@ function configure_contrail() {
     source contrail_config_functions
 
     #invoke functions to change the files
-    replace_api_server_conf
-    replace_contrail_plugin_conf
-    replace_contrail_schema_conf
-    replace_svc_monitor_conf
-    replace_discovery_conf
-    replace_vnc_api_lib_conf
-    replace_ContrailPlugin_conf
-    replace_contrail_control_conf
-    replace_dns_conf
+    if [ "$INSTALL_PROFILE" = "ALL" ]; then
+        replace_api_server_conf
+        replace_contrail_plugin_conf
+        replace_contrail_schema_conf
+        replace_svc_monitor_conf
+        replace_discovery_conf
+        replace_vnc_api_lib_conf
+        replace_ContrailPlugin_conf
+        replace_contrail_control_conf
+        replace_dns_conf
+        replace_irond_basic_auth_users
+    fi	        
     replace_contrail_compute_conf
     replace_contrail_vrouter_agent_conf
-    replace_irond_basic_auth_users
-    write_ifcfg-vhos0
-    write_default_pmac
+    write_ifcfg-vhost0
+    write_default_pmac 
+    
 }
 
 function init_contrail() {
@@ -728,17 +739,18 @@ function stop_contrail() {
         fi
     fi
     (cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh stop)
-    screen_stop redis
-    screen_stop cass
-    screen_stop zk
-    screen_stop ifmap
-    screen_stop disco
-    screen_stop apiSrv
-    screen_stop schema
-    screen_stop svc-mon
-    screen_stop control
+    if [ "$INSTALL_PROFILE" = "ALL" ]; then
+        screen_stop redis
+        screen_stop cass
+        screen_stop zk
+        screen_stop ifmap
+        screen_stop disco
+        screen_stop apiSrv
+        screen_stop schema
+        screen_stop svc-mon
+        screen_stop control
+    fi
     screen_stop agent  
- 
     cmd=$(lsmod | grep vrouter)
     if [ $? == 0 ]; then
         cmd=$(sudo rmmod vrouter)

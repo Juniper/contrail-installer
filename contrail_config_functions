@@ -1,5 +1,4 @@
-
-#comment if functions is already sourced
+	
 source functions
 
 
@@ -7,16 +6,11 @@ function replace_api_server_conf()
 {
     file="/etc/contrail/contrail-api.conf"
     
-    #add the cassandra_servers_list and the for loop for processing
-        
-
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
     do
         cassandra_server=${cassandra_server}""$ip":9160" 
     done
-    
-   
     port=0
     if $USE_CERTS ; then
         port=8444 
@@ -48,16 +42,7 @@ function replace_api_server_conf()
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
     #check_replace_value $file KEYSTONE memcache_servers '127.0.0.1:11211' 
     #check_replace_value $file KEYSTONE auth_protocol http
-    
-
-}
-function cassandra_server_list()
-{
-
-    cassandra_ip_list=$1
-    
-    return $cassandra_server
-
+    check_replace_value $file KEYSTONE auth_port 5000 
 
 }
 
@@ -87,29 +72,24 @@ function replace_contrail_plugin_conf()
     
     #un-comment if keystone ip present
     #check_replace_value $file APISERVER auth_url http://$KEYSTONE_IP:35357/v2.0
-    #check_replace_value $file APISERVER admin_token $CONTRAIL_ADMIN_TOKEN   
-    
+    #check_replace_value $file APISERVER admin_token $CONTRAIL_ADMIN_TOKEN     
    
     check_replace_value $file KEYSTONE admin_user $CONTRAIL_ADMIN_USERNAME
     check_replace_value $file KEYSTONE admin_password $ADMIN_PASSWORD
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
 
-    
 }
 
 function replace_contrail_schema_conf()
 {
 
     file="/etc/contrail/contrail-schema.conf"
-    
-    #add the cassandra_servers_list and the for loop for processing
-    #for x in ${value[@]}; do  xyz=${xyz}" "$x":9160" ;done    
+
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
     do
         cassandra_server=${cassandra_server}" "$ip":9160" 
     done
-
     port=0
     if $USE_CERTS ; then
         port=8444 
@@ -137,7 +117,6 @@ function replace_contrail_schema_conf()
     check_replace_value $file KEYSTONE admin_user $CONTRAIL_ADMIN_USERNAME
     check_replace_value $file KEYSTONE admin_password $ADMIN_PASSWORD
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
-   
     
 }
 
@@ -146,16 +125,11 @@ function replace_svc_monitor_conf()
 
     file="/etc/contrail/svc-monitor.conf"
    
-    #add the cassandra_servers_list and the for loop for processing
-    #for x in ${value[@]}; do  xyz=${xyz}" "$x":9160" ;done    
-
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
     do
         cassandra_server=${cassandra_server}" "$ip":9160" 
     done
-
-   
     port=0
     if $USE_CERTS ; then
         port=8444 
@@ -237,14 +211,12 @@ function replace_vnc_api_lib_conf()
     #check_replace_value $file auth AUTHN_PORT  35357
     #check_replace_value $file auth AUTHN_URL  '/v2.0/tokens'
     check_replace_value $file auth AUTHN_SERVER $OPENSTACK_IP
-    
 
 }
 
 
 function replace_ContrailPlugin_conf()
 {
-
     file="/etc/contrail/ContrailPlugin.ini"
     
     check_replace_value $file APISERVER api_server_ip $CFGM_IP
@@ -254,11 +226,11 @@ function replace_ContrailPlugin_conf()
     check_replace_value $file KEYSTONE admin_user $CONTRAIL_ADMIN_USERNAME
     check_replace_value $file KEYSTONE admin_password $ADMIN_PASSWORD
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
+
 }
 
 function replace_contrail_control_conf()
 {
-   
     file="/etc/contrail/contrail-control.conf"
     
     port=0
@@ -276,25 +248,27 @@ function replace_contrail_control_conf()
     else
         port=8443
     fi
-
-    #section is empty need to add later
-    
-
-    check_replace_value $file  IFMAP server_url https://$CFGM_IP:$port
+    if [[ $CONTROL_IP = "localhost" ]]; then
+        CONTROL_IP="127.0.0.1"
+    fi
+    if [[ $COLLECTOR_IP = "localhost" ]]; then
+        COLLECTOR_IP="127.0.0.1"
+    fi
+    check_replace_value $file  IFMAP server_url https://$CONTROL_IP:$port
     check_replace_value $file  IFMAP user $CONTROL_IP
     check_replace_value $file  IFMAP password $CONTROL_IP
     
     #check_replace_value $file  DISCOVERY DISCOVERY $DISCOVERY_IP
     
     #runs the command hostname and will be outputed 
-    check_replace_value $file  "DEFAULT" collector $COLLECTOR_IP:8086
-    check_replace_value $file  "DEFAULT" hostname `hostname`
+    check_replace_value $file  DEFAULT collectors $COLLECTOR_IP:8086
+    check_replace_value $file  DEFAULT hostname `hostname`
 																	   
-    check_replace_value $file  "DEFAULT" hostip $CONTROL_IP
-    #check_replace_value $file  "DEFAULT" bgp_port 179
-    #check_replace_value $file  "DEFAULT" CERT_OPTS $CERT_OPTS
-    #check_replace_value $file  "DEFAULT" CONTROL_LOGFILE "--log-file=/var/log/contrail/control.log"
-    #check_replace_value $file  "DEFAULT" LOG_LOCAL ''
+    check_replace_value $file  DEFAULT hostip $CONTROL_IP
+    #check_replace_value $file  DEFAULT bgp_port 179
+    #check_replace_value $file  DEFAULT CERT_OPTS $CERT_OPTS
+    #check_replace_value $file  DEFAULT CONTROL_LOGFILE "--log-file=/var/log/contrail/control.log"
+    #check_replace_value $file  DEFAULT LOG_LOCAL ''
     
 }
 
@@ -327,6 +301,7 @@ function replace_dns_conf()
     check_replace_value $file  ""  CERT_OPTS $CERT_OPTS
     #check_replace_value $file  ""  DNS_LOGFILE "--log-file=/var/log/contrail/control.log"
     check_replace_value $file  ""  LOG_LOCAL ''
+
 }
 
 function check_dev()
@@ -340,6 +315,7 @@ function check_dev()
        echo  "interface not found try another interface"
        
    fi
+
 }
 
 function remove_spaces()
@@ -348,6 +324,7 @@ function remove_spaces()
     section=$2
     sed -i "s/\[$section\]//g" $file
     sed -i "s/ //g" $file
+
 }
 
 function replace_contrail_compute_conf()
@@ -371,33 +348,45 @@ function replace_contrail_compute_conf()
         echo_summary_summary "interface not found try another interface inside else"
         exit 1
     fi
-}
 
+}
 
 function find_gateway()
 {
     interface=$1
     gateway=$(netstat -rn | grep ^"0.0.0.0" | grep $interface | awk '{ print $2 }')
     echo $gateway
+
 }
+
 function get_Mask()
 {
     interface=$1
-    mask=$(ifconfig eth0|grep Mask | awk 'BEGIN{FS=OFS="Mask"}{print $2}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
+    mask=$(ifconfig $interface|grep Mask | awk 'BEGIN{FS=OFS="Mask"}{print $2}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
     echo $mask
+
 }
+
+function get_management_ip()
+{
+    interface=$1
+    management_ip=$(ifconfig $interface|grep -e addr| awk 'BEGIN{FS=OFS="net addr"}{print $2}'|awk '{print $1}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
+    echo $management_ip
+
+}
+
 function get_Mac()
 {
     interface=$1
-    mac=$(ifconfig eth0|grep HWaddr | awk '{print $5}')
+    mac=$(ifconfig $interface|grep HWaddr | awk '{print $5}')
     echo $mac
+
 }
-
-
 
 function replace_contrail_vrouter_agent_conf()
 {
     file="/etc/contrail/contrail-vrouter-agent.conf"
+    
     cidr=$CFGM_IP/24
     discovery_ip=$CFGM_IP
     ncontrols=2		
@@ -405,43 +394,58 @@ function replace_contrail_vrouter_agent_conf()
     gateway=$(find_gateway $PHYSICAL_INTERFACE)
     collector_port=8080 
      
-    check_replace_value $file "CONTROL-NODE" "server" $CFGM_IP  
-    check_replace_value $file  "NETWORKS" "control_network_ip" $CFGM_IP  
-    check_replace_value $file  "VIRTUAL-HOST-INTERFACE" "ip" $cidr
-    check_replace_value $file  "VIRTUAL-HOST-INTERFACE" "gateway" $gateway
-    check_replace_value $file  "VIRTUAL-HOST-INTERFACE" "physical_interface" $PHYSICAL_INTERFACE
-    check_replace_value $file  "COLLECTOR" "port" $collector_port
-    check_replace_value $file  "COLLECTOR" "server" $collector_ip
+    check_replace_value $file CONTROL-NODE server $CFGM_IP  
+    check_replace_value $file  NETWORKS control_network_ip $CFGM_IP  
+    check_replace_value $file  VIRTUAL-HOST-INTERFACE ip $cidr
+    check_replace_value $file  VIRTUAL-HOST-INTERFACE name vhost0 
+    check_replace_value $file  VIRTUAL-HOST-INTERFACE gateway $gateway
+    check_replace_value $file  VIRTUAL-HOST-INTERFACE physical_interface $PHYSICAL_INTERFACE
+    check_replace_value $file  COLLECTOR port $collector_port
+    check_replace_value $file  COLLECTOR server $collector_ip
 
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
-        check_replace_value $file  "GATEWAY-0" "interface" $CONTRAIL_VGW_INTERFACE
-        check_replace_value $file  "GATEWAY-0" "ip_blocks" $CONTRAIL_VGW_PUBLIC_SUBNET
-        check_replace_value $file  "GATEWAY-0" "routing_instance" $CONTRAIL_VGW_PUBLIC_NETWORK
+        check_replace_value $file  GATEWAY-0 interface $CONTRAIL_VGW_INTERFACE
+        check_replace_value $file  GATEWAY-0 ip_blocks $CONTRAIL_VGW_PUBLIC_SUBNET
+        check_replace_value $file  GATEWAY-0 routing_instance $CONTRAIL_VGW_PUBLIC_NETWORK
     fi
 }
 
 function replace_irond_basic_auth_users()
-{
-      file1="/opt/stack/contrail/third_party/irond-0.3.0-bin/basicauthusers.properties"
-      file="/etc/contrail/basicauthusers.properties"
+{     
+      
+      file="/opt/stack/contrail/third_party/irond-0.3.0-bin/basicauthusers.properties"
+      tmp_file="/etc/contrail/basicauthusers.properties"
       echo '# Contrail users' >> $file
-      echo 'api-server:api-server' >> $file
-      echo 'schema-transformer:schema-transformer' >> $file
-      echo 'svc-monitor:svc-monitor' >> $file
-      echo '$CFGM_IP:$CFGM_IP' >> $file
-      echo '$CFGM_IP.dns:$CFGM_IP.dns' >> $file
-      echo '$CFGM_IP=$CFGM_IP--0000000001-1' >> "/opt/stack/contrail/third_party/irond-0.3.0-bin/publisher.properties"     
-      mv $file $file1  
+      sudo grep -q  ^"api-server" $file
+      value=$?
+      if [[ $value -eq 1 ]]; then
+          echo 'api-server:api-server' >> $file
+          echo 'schema-transformer:schema-transformer' >> $file
+          echo 'svc_monitor:svc_monitor' >> $file
+          sudo sed -e '/$CONTROL_IP:/d' -e '/$CONTROL_IP.dns:/d' $file > $tmp_file
+          echo "$CONTROL_IP:$CONTROL_IP" >> $tmp_file
+          echo "$CONTROL_IP.dns:$CONTROL_IP.dns" >> $tmp_file
+          echo "$CONTROL_IP=$CFGM_IP--0000000001-1" >> "/opt/stack/contrail/third_party/irond-0.3.0-bin/publisher.properties"     
+          mv $tmp_file $file
+      fi  
 }
+
 function write_default_pmac()
 {
     file="/etc/contrail/default_pmac"
     mac=$(get_Mac)
     echo $mac >> $file
 }
-function write_ifcfg-vhos0()
+
+function write_ifcfg-vhost0()
 {
     file="/etc/contrail/ifcfg-vhost0"
+    value=$(check_dev 'vhost0')
+    if [[ $value = "interface found" ]];then 
+        ip=$(get_management_ip vhost0)
+    else
+        ip=$(get_management_ip eth0)
+    fi
     sudo rm $file
     echo "#Contrail vhost0" >> $file
     echo "DEVICE=vhost0" >> $file
@@ -449,7 +453,7 @@ function write_ifcfg-vhos0()
     echo "BOOTPROTO=none" >> $file 
     echo "IPV6INIT=no" >> $file
     echo "USERCTL=yes" >> $file
-    echo "IPADDR=$CFGM_IP" >> $file
+    echo "IPADDR=$ip" >> $file
     echo "NETMASK=$(get_Mask $PHYSICAL_INTERFACE)" >> $file
     echo "NM_CONTROLLED=no" >>$file
     echo "#NETWORK MANAGER BUG WORKAROUND" >> $file

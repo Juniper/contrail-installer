@@ -1112,9 +1112,9 @@ function run_process() {
 # Helper to launch a service in a named screen
 # screen_it service "command-line"
 function screen_it {
-    SCREEN_NAME=${SCREEN_NAME:-stack}
+    SCREEN_NAME=${SCREEN_NAME:-contrail}
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
-    USE_SCREEN=$(trueorfalse True $USE_SCREEN)
+    USE_SCREEN=$(trueorfalse False $USE_SCREEN)
 
 #    if is_service_enabled $1; then
         # Append the service to the screen rc file
@@ -1161,9 +1161,9 @@ function screen_it {
 # that did not leave a PID behind
 # screen_stop service
 function screen_stop() {
-    SCREEN_NAME=${SCREEN_NAME:-stack}
+    SCREEN_NAME=${SCREEN_NAME:-contrail}
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
-    USE_SCREEN=$(trueorfalse True $USE_SCREEN)
+    USE_SCREEN=$(trueorfalse False $USE_SCREEN)
 
 #    if is_service_enabled $1; then
         # Kill via pid if we have one available
@@ -1187,7 +1187,7 @@ function screen_stop() {
 # Screen rc file builder
 # screen_rc service "command-line"
 function screen_rc {
-    SCREEN_NAME=${SCREEN_NAME:-stack}
+    SCREEN_NAME=${SCREEN_NAME:-contrail}
      
     SCREENRC=$TOP_DIR/$SCREEN_NAME-screenrc
     if [[ ! -e $SCREENRC ]]; then

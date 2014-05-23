@@ -6,7 +6,7 @@
 import sys
 import argparse
 import ConfigParser
-
+import copy
 from vnc_api.vnc_api import *
 
 
