@@ -29,7 +29,7 @@ CONTRAIL_ADMIN_USERNAME=${CONTRAIL_ADMIN_USERNAME:-admin}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-contrail123}
 CONTRAIL_ADMIN_TENANT=${CONTRAIL_ADMIN_TENANT:-admin}
 CFGM_IP=${SERVICE_HOST:-127.0.0.1}
-if [[ $CFGM_IP = "locahost" ]] ; then
+if [[ "$CFGM_IP" == "localhost" ]] ; then
     CFGM_IP="127.0.0.1"
 fi
 USE_CERTS=${USE_CERTS:-false}
@@ -37,10 +37,10 @@ MULTI_TENANCY=${MULTI_TENANCY:-false}
 PUPPET_SERVER=${PUPPET_SERVER:-''}
 CASSANDRA_IP_LIST=${CASSANDRA_IP_LIST:-127.0.0.1}
 
-OPENSTACK_IP=$CFGM_IP
-COLLECTOR_IP=$CFGM_IP
-DISCOVERY_IP=$CFGM_IP
-CONTROL_IP=$CFGM_IP
+OPENSTACK_IP=${OPENSTACK_IP:-$CFGM_IP}
+COLLECTOR_IP=${COLLECTOR_IP:-$CFGM_IP}
+DISCOVERY_IP=${DISCOVERY_IP:-$CFGM_IP}
+CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
 
 # Draw a spinner so the user knows something is happening
 function spinner() {
@@ -680,8 +680,10 @@ function configure_contrail() {
     # )
 
     #defaults loading
-    cd /etc  
-    sudo mkdir -p contrail
+    if [[ ! -d "/etc/contrail" ]]; then
+        sudo mkdir -p /etc/contrail
+        sudo chown `whoami` /etc/contrail
+    fi
     cd $TOP_DIR  
     
     #un-comment if required after review
@@ -710,7 +712,10 @@ function configure_contrail() {
     replace_contrail_vrouter_agent_conf
     write_ifcfg-vhost0
     write_default_pmac 
-    
+    write_qemu_conf
+    replace_vizd_param
+    replace_qed_param
+    fixup_config_files
 }
 
 function init_contrail() {

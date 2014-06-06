@@ -330,6 +330,9 @@ function remove_spaces()
 function replace_contrail_compute_conf()
 {
     file="/etc/contrail/contrail-compute.conf"
+    if [[ -f $file ]]; then
+        rm $file
+    fi
     value=$(check_dev $PHYSICAL_INTERFACE)
     if [[ $value = "interface found" ]];then
     
@@ -349,6 +352,33 @@ function replace_contrail_compute_conf()
         exit 1
     fi
 
+}
+
+function get_dns_servers()
+{
+    dns_list=$(grep "^nameserver\\>" /etc/resolv.conf | awk  '{print $2}')
+    echo $dns_list
+}
+
+function get_domain_search_list()
+{
+    domain_list=''
+    domin_list=$(grep ^"search" /etc/resolv.conf | awk '{$1="";print $0}')
+    if [[ $? -eq 1 ]]; then
+        domin_list=grep ^"domain" /etc/resolv.conf | awk '{$1=""; print $0}'
+    fi
+    echo $domin_list
+}
+
+function get_if_mtu()
+{
+    mtu=''
+    interface=$1 
+    mtu=$(ifconfig $interface|grep MTU | awk 'BEGIN{FS=OFS="MTU"}{print $2}'|awk 'BEGIN{FS=OFS=":"}{print $2}'|awk '{print $1}')
+    if [[ $mtu -eq 1500 ]]; then
+        mtu=''
+    fi
+    echo $mtu
 }
 
 function find_gateway()
@@ -374,7 +404,122 @@ function get_management_ip()
     echo $management_ip
 
 }
+function get_intf_ip()
+{
+    interface=$1
+    ip=''
+    interface_list=$(sudo netstat -i | awk '{print $1}'|sed -n '1,2!p')
+    for inf in ${interface_list[@]}
+    do
+        if [[ "$inf" == "$interface" ]]; then
+            ip=$(get_management_ip $inf)
+            echo $ip
+        fi
+    done
+    if [[ -z $ip ]]; then
+        echo "$interface not configured"
+    fi 
 
+}
+
+function get_device_by_ip()
+{
+    ip=$1
+    interface=""
+    interface_list=$(sudo netstat -i | awk '{print $1}'|sed -n '1,2!p')
+    for inf in ${interface_list[@]}
+    do
+        if [[ $inf == "pkt1" ]]; then
+            interface=""
+        else
+            if [[ "$ip" == "$(get_management_ip $inf)" ]]; then
+                if [[ "$interface" == "vhost0" ]]; then
+                   : 
+                fi
+                interface=$inf
+                echo $interface  
+            fi
+               
+        fi        
+    done
+    if [[ -z $interface ]]; then
+        echo "$ip not configured"
+    fi
+   
+ }
+function _rewrite_ifcfg_file()
+{
+    filename=$1
+    dev=$2
+    prsv_cfg=$3
+    
+    bond=false
+    mac=''
+    temp_dir_name="/tmp"
+    if [[ -d "/sys/class/net/$dev/bonding" ]]; then
+        bond=true
+    fi
+    mac=$(get_Mac $dev)
+    ifcfg_file='/etc/sysconfig/network-scripts/ifcfg-$dev'
+     
+    if [[ ! -f $ifcfg_file ]]; then
+        ifcfg_file=$temp_dir_name'/ifcfg-'$dev
+        rm $ifcfg_file
+        echo "#Contrail-$dev" >> $ifcfg_file
+        echo "TYPE=Ethernet" >> $ifcfg_file
+	echo "ONBOOT=yes" >> $ifcfg_file
+	echo "DEVICE="$dev"" >> $ifcfg_file
+	echo "USERCTL=yes" >> $ifcfg_file
+	echo "NM_CONTROLLED=no" >> $ifcfg_file
+	echo "HWADDR=$mac" >> $ifcfg_file
+    fi
+    for dcfg in ${prsv_cfg[@]}
+    do
+        $dcfg >> $ifcfg_file 
+    done
+    new_f_lines=()
+    remove_items=('IPADDR','NETMASK','PREFIX','GATEWAY','HWADDR','DNS1','DNS2','BOOTPROTO','NM_CONTROLLED','#Contrail')
+    remove_items+=("DEVICE")
+    new_f_lines+=("#Contrail-$dev")
+    new_f_lines+=("DEVICE=$dev")
+    f_lines=()
+    while read line; do
+       f_lines+=($line)
+    done < $ifcfg_file
+    for line in ${f_lines[@]} 
+    do
+        found=false
+        for text in ${remove_items[@]}
+        do
+             if echo "$line" | grep -q "$text"; then
+                 found=true
+             fi
+        done
+        if [[ $found ]]; then
+            new_f_lines+=($line)
+        fi   
+    done
+    if [[ $bond ]]; then
+        new_f_lines+=("SUBCHANNELS=1,2,3")
+        #new_f_lines+=()
+    else
+        new_f_lines+=("HWADDR=$mac") 
+    fi
+    if [[ -f $filename ]]; then
+        sudo rm $filename
+    fi
+    for line in ${new_f_lines[@]} 
+    do
+        echo $line >> $filename
+    done
+      
+ 
+}
+
+function migrate_routes()
+{
+   :
+}
 function get_Mac()
 {
     interface=$1
@@ -387,7 +532,7 @@ function replace_contrail_vrouter_agent_conf()
 {
     file="/etc/contrail/contrail-vrouter-agent.conf"
     
-    cidr=$CFGM_IP/24
+    cidr=$(get_management_ip $PHYSICAL_INTERFACE)/24
     discovery_ip=$CFGM_IP
     ncontrols=2		
     collector_ip=$CFGM_IP
@@ -461,5 +606,207 @@ function write_ifcfg-vhost0()
 
 }
 
+function write_qemu_conf()
+{
+   file="/etc/libvirt/qemu.conf"
+   temp_file="qemu.conf"
+   sudo grep -q  ^"cgroup_device_acl" $file
+   value=$?
+   if [[ $value -eq 1 ]] ; then  
+       sudo cp $file $temp_file
+       sudo chown `whoami` $temp_file
+       sudo echo "cgroup_device_acl = [" >> $temp_file
+       sudo echo '    "/dev/null", "/dev/full", "/dev/zero",' >> $temp_file
+       sudo echo '    "/dev/random", "/dev/urandom",' >> $temp_file
+       sudo echo '    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",' >> $temp_file
+       sudo echo '    "/dev/rtc", "/dev/hpet","/dev/net/tun",' >> $temp_file
+       sudo echo "]" >> $temp_file
+       sudo mv $temp_file $file
+  fi
 
+}
 
+function replace_in_file()
+{
+    file=$1
+    regexp=$2
+    replace=$3
+    sed -i 's/$regexp/$replace/g' $file
+ }
+ 
+function contains_elements()
+{
+    role=()
+    roles+=$1
+    search_string=$2  
+    match=$(echo "${roles[@]:0}" | grep -o $search_string)  
+    [[ ! -z $match ]] && echo "found"
+ 
+}
+
+function fixup_config_files()
+{    
+    multi_net=false 
+    #roles=${roles:-('config', 'openstack', 'control', 'compute', 'collector', 'webui')}
+    if [[ ! -d "/etc/contrail" ]]; then
+        sudo mkdir -p /etc/contrail
+        sudo chown `whoami` /etc/contrail
+    fi
+    if [[ ! -d "/etc/quantum/plugins/contrail" ]]; then
+        sudo mkdir -p /etc/quantum/plugins/contrail
+        sudo chown `whoami` /etc/quantum/plugins/contrail  
+    fi
+    COMPUTE_IP=$(get_management_ip $PHYSICAL_INTERFACE)
+    if [[ -z $SERVICE_TOKEN ]]; then
+        SERVICE_TOKEN=$(sudo openssl rand -hex 10) 
+        $SERVICE_TOKEN > /etc/contrail/service.token
+    fi
+    
+    # Disable selinux
+    sudo sed 's/SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config > config.new
+    sudo mv config.new /etc/selinux/config
+    setenforce 0
+
+    # Disable iptables      
+    sudo chkconfig iptables off
+    sudo iptables --flush 
+    
+    sudo rm /etc/contrail/ctrl-details
+    echo 'SERVICE_TOKEN='$SERVICE_TOKEN >> "/etc/contrail/ctrl-details"
+    echo 'ADMIN_PASSWORD='$ADMIN_PASSWORD >> "/etc/contrail/ctrl-details"
+    echo 'CONTROLLER='$OPENSTACK_IP >> "/etc/contrail/ctrl-details"
+    echo 'QUANTUM='$CFGM_IP >> "/etc/contrail/ctrl-details" 
+    echo 'COMPUTE='$COMPUTE_IP >> "/etc/contrail/ctrl-details"
+    echo 'CONTROLLER_MGMT='$CFGM_IP >> "/etc/contrail/ctrl-details"
+    REDIS_UVE="/etc/contrail/redis-uve.conf"
+    REDIS_QUERY="/etc/contrail/redis-query.conf"
+    if [[ -f /etc/redis/redis.conf ]]; then
+        REDIS_CONF="/etc/redis/redis.conf"
+    else
+        REDIS_CONF="/etc/redis.conf"
+    fi
+    sudo cp $REDIS_CONF $REDIS_UVE
+    sudo cp $REDIS_CONF $REDIS_QUERY
+    replace_in_file  $REDIS_UVE  'pidfile /var/run/redis/redis.pid' 'pidfile /var/run/redis/redis-uve.pid'  
+    replace_in_file  $REDIS_UVE  'port 6379' 'port 6381'  
+    replace_in_file  $REDIS_UVE  'bind 127.0.0.1' '#bind 127.0.0.1'  
+    replace_in_file  $REDIS_UVE  'logfile /var/log/redis/redis-server.log' 'logfile /var/log/redis/redis-uve.log'  
+    replace_in_file  $REDIS_UVE  'dbfilename dump.rdb' 'dbfilename dump-uve.rdb'  
+
+    replace_in_file  $REDIS_QUERY  'pidfile /var/run/redis/redis.pid' 'pidfile /var/run/redis/redis-query.pid'  
+    replace_in_file  $REDIS_QUERY  'port 6379' 'port 6380'  
+    replace_in_file  $REDIS_QUERY  'bind 127.0.0.1' '#bind 127.0.0.1'  
+    replace_in_file  $REDIS_QUERY  'logfile /var/log/redis/redis-server.log' 'logfile /var/log/redis/redis-query.log'  
+    replace_in_file  $REDIS_QUERY  'dbfilename dump.rdb' 'dbfilename dump-query.rdb'     
+    replace_vizd_param
+    replace_qed_param
+    if [[ $NON_MGMT_IP ]]; then
+       if [[ $NON_MGMT_IP != $COMPUTE_IP ]]; then
+           multi_net=true
+           vhost_ip=$NON_MGMT_IP
+       fi
+    fi 
+    if [[ $PHYSICAL_INTERFACE ]];then
+        if [[ $(check_dev $PHYSICAL_INTERFACE) = "interface found" ]]; then
+            dev=$PHYSICAL_INTERFACE
+        else
+            echo "PHYSICAL INTERFACE NOT CONFIGURED"
+        fi
+    else
+        dev=$(get_device_by_ip $vhost_ip)
+        if [[ $multi_net ]]; then
+            compute_dev=$(get_device_by_ip $COMPUTE_IP)
+        fi    
+    fi     
+    if [[ $dev ]] && [[ $dev != "vhost0" ]]; then
+        mac=$(get_Mac $dev)
+        netmask=$(get_Mask $dev)
+        if [[ $multi_net ]]; then
+            gateway=$NON_MGMT_GW
+        else
+            gateway=$(find_gateway $dev)
+        fi
+    fi
+    i=0 
+    if [[ ! multi_net ]]; then
+        if [[ $gateway ]]; then
+            echo "GATEWAY=$gateway" >> "/etc/contrail/ifcfg-vhost0"         
+        fi
+        dns_list=()
+        dns_list+=$(get_dns_servers $dev)
+        for dns in ${dns_list[@]} 
+        do
+            echo "DNS$i=$dev" >> "/etc/contrail/ifcfg-vhost0"
+            i=$((i+1)) 
+        done    
+        domain_list=$(get_domain_search_list)
+        if [[ domain_list ]]; then
+            echo "DOMAIN=$domin_list" >> "/etc/contrail/ifcfg-vhost0"
+        fi 
+    fi
+    prsv_cfg=()
+    mtu=$(get_if_mtu $dev)
+    if [[ $mtu ]]; then
+        dcfg='MTU=$mtu'
+        echo "$dcfg \n" >> "/etc/contrail/ifcfg-vhost0"
+        prsv_cfg+=(dcfg) 
+    fi           
+    if [[ -f "/etc/sysconfig/network-scripts/ifcfg-$dev.rpmsave" ]]; then
+        sudo cp /etc/sysconfig/network-scripts/ifcfg-$dev /etc/sysconfig/network-scripts/ifcfg-$dev.rpmsave   
+    fi
+    _rewrite_ifcfg_file /etc/contrail/ifcfg-$dev $dev $prsv_cfg 
+    if [[ multi_net ]]; then
+        #migrate_routes $dev
+        :
+    fi
+    sudo chkconfig network on 
+}
+
+function replace_vizd_param()
+{
+    file="/etc/contrail/vizd_param"
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}" "$ip":9160" 
+    done
+    check_replace_value $file "" CASSANDRA_SERVER_LIST $cassandra_server
+    #check_replace_value $file "" REDIS_SERVER $__contrail_redis_server__
+    #check_replace_value $file "" REDIS_SERVER_PORT  $__contrail_redis_server_port__
+    check_replace_value $file "" DISCOVERY  $DISCOVERY_IP
+    check_replace_value $file "" HOST_IP  $COLLECTOR_IP
+    #check_replace_value $file "" LISTEN_PORT  $__contrail_listen_port__
+    #check_replace_value $file "" HTTP_SERVER_PORT  $__contrail_http_server_port__
+    check_replace_value $file "" LOG_FILE  '--log-file=/var/log/contrail/collector.log'
+    check_replace_value $file "" LOG_LOCAL  '--log-local'
+    #check_replace_value $file "" LOG_LEVEL  $__contrail_log_level__
+    remove_spaces $file DEFAULTS
+
+}
+
+function replace_qed_param()
+{
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}" "$ip":9160" 
+    done
+    collector_ip=""
+    for ip in ${COLLECTOR_IP_LIST[@]};
+    do
+        collector_ip=${collector_ip}" "$ip":8086" 
+    done
+ 
+    check_replace_value $file "" CASSANDRA_SERVER_LIST  $cassandra_server
+    check_replace_value $file "" REDIS_SERVER  $COLLECTOR_IP
+    check_replace_value $file "" REDIS_SERVER_PORT  6380
+    check_replace_value $file "" DISCOVERY  $DISCOVERY_IP
+    check_replace_value $file "" COLLECTORS  $collector_ip
+    #check_replace_value $file "" LISTEN_PORT  $__contrail_listen_port__
+    #check_replace_value $file "" HTTP_SERVER_PORT  $__contrail_http_server_port__
+    check_replace_value $file "" LOG_FILE  '--log-file=/var/log/contrail/qe.log'
+    check_replace_value $file "" LOG_LOCAL  '--log-local'
+    #check_replace_value $file "" LOG_LEVEL  $__contrail_log_level__
+    remove_spaces $file DEFAULTS
+
+}
