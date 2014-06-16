@@ -3,11 +3,17 @@
 
 # Contrail NFV
 # ------------
+if [[ $EUID -eq 0 ]]; then
+    echo "You are running this script as root."
+    echo "Cut it out."
+    exit 1
+fi
 
 # Save trace setting
 MY_XTRACE=$(set +o | grep xtrace)
 set -o xtrace
 TOP_DIR=`pwd`
+CONTRAIL_USER=$(whoami)
 source functions
 source localrc
 
@@ -36,11 +42,38 @@ USE_CERTS=${USE_CERTS:-false}
 MULTI_TENANCY=${MULTI_TENANCY:-false}
 PUPPET_SERVER=${PUPPET_SERVER:-''}
 CASSANDRA_IP_LIST=${CASSANDRA_IP_LIST:-127.0.0.1}
+COLLECTOR_IP_LIST=${COLLECTOR_IP_LIST:-$CFGM_IP}
 
 OPENSTACK_IP=${OPENSTACK_IP:-$CFGM_IP}
 COLLECTOR_IP=${COLLECTOR_IP:-$CFGM_IP}
 DISCOVERY_IP=${DISCOVERY_IP:-$CFGM_IP}
 CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
+CONTRAIL_DEFAULT_INSTALL=${$CONTRAIL_DEFAULT_INSTALL:-True}
+
+if [[ "$RECLONE" == "True" ]]; then
+    echo "Recloning the contrail again"
+    sudo rm .stage.txt
+fi
+#Setup root access with sudoers
+function setup_root_access {
+    # We're not **root**, make sure ``sudo`` is available
+    is_package_installed sudo || install_package sudo
+
+    # UEC images ``/etc/sudoers`` does not have a ``#includedir``, add one
+    sudo grep -q "^#includedir.*/etc/sudoers.d" /etc/sudoers ||
+        echo "#includedir /etc/sudoers.d" | sudo tee -a /etc/sudoers
+
+    # Set up devstack sudoers
+    TEMPFILE=`mktemp`
+    echo "$CONTRAIL_USER ALL=(root) NOPASSWD:ALL" >$TEMPFILE
+    # Some binaries might be under /sbin or /usr/sbin, so make sure sudo will
+    # see them by forcing PATH
+    echo "Defaults:$CONTRAIL_USER secure_path=/sbin:/usr/sbin:/usr/bin:/bin:/usr/local/sbin:/usr/local/bin" >> $TEMPFILE
+    chmod 0440 $TEMPFILE
+    sudo chown root:root $TEMPFILE
+    sudo mv $TEMPFILE /etc/sudoers.d/50_contrail_sh
+
+}
 
 # Draw a spinner so the user knows something is happening
 function spinner() {
@@ -142,18 +175,58 @@ function setup_logging() {
     fi
 }
 
+function download_redis {
+    echo "Downloading dependencies"
+    if is_ubuntu; then
+        if ! which redis-server > /dev/null 2>&1 ; then
+            sudo apt-get install libjemalloc1
+            wget http://us.archive.ubuntu.com/ubuntu/pool/universe/r/redis/redis-server_2.6.13-1_amd64.deb
+            sudo dpkg -i redis-server_2.6.13-1_amd64.deb
+            rm -rf redis-server_2.6.13-1_amd64.deb
+            # service will be started later
+            sudo service redis-server stop
+        fi
+    else
+        if ! which redis-server > /dev/null 2>&1 ; then
+            wget http://mir01.syntis.net/atomic/fedora/17/x86_64/RPMS/redis-2.6.13-3.fc17.art.x86_64.rpm
+            sudo yum -y install redis-2.6.13-3.fc17.art.x86_64.rpm
+            rm -rf redis-2.6.13-3.fc17.art.x86_64.rpm
+        fi
+    fi
+}
+
+function download_node_for_npm {
+    # install node which brings npm that's used in fetch_packages.py
+    if ! which node > /dev/null 2>&1 || ! which npm > /dev/null 2>&1 ; then
+        wget http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz -O node-v0.8.15.tar.gz
+        tar -xf node-v0.8.15.tar.gz
+        contrail_cwd=$(pwd)
+        cd node-v0.8.15
+        ./configure; make; sudo make install
+        cd ${contrail_cwd}
+        rm -rf node-v0.8.15.tar.gz
+        rm -rf node-v0.8.15
+    fi
+}
+
 function download_dependencies {
     echo "Downloading dependencies"
     if is_ubuntu; then
         apt_get install patch scons flex bison make vim unzip
         apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
         apt_get install python-dev autoconf automake build-essential libtool
-	apt_get install python-lxml
         apt_get install libevent-dev libxml2-dev libxslt-dev
         apt_get install uml-utilities
-        apt_get install python-setuptools
+        apt_get install python-setuptools python-novaclient python-ncclient
+        apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
-        apt_get install chkconfig
+        apt_get install chkconfig screen
+        apt_get install ant debhelper default-jdk javahelper
+        apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
+        if [ "$INSTALL_PROFILE" = "ALL" ]; then
+            apt_get install rabbitmq-server
+            apt_get install python-kombu
+        fi
     else
         sudo yum -y install patch scons flex bison make vim
         sudo yum -y install expat-devel gettext-devel curl-devel
@@ -166,7 +239,7 @@ function download_dependencies {
         sudo yum -y install curl
         sudo yum -y install chkconfig
     fi
-
+    
 }
 
 function download_python_dependencies {
@@ -178,14 +251,17 @@ function download_python_dependencies {
     pip_install gevent geventhttpclient==1.0a thrift
     pip_install netifaces fabric argparse
     pip_install bottle
+    pip_install uuid psutil
+    pip_install netaddr bitarray 
+    
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
-            apt_get install redis-server
+            :
+            #apt_get install redis-server
         else
-            sudo yum -y install redis
             sudo yum -y install java-1.7.0-openjdk
         fi
-        pip_install stevedore xmltodict python-keystoneclient
+        pip_install pycassa stevedore xmltodict python-keystoneclient
         pip_install kazoo pyinotify
     fi
 }
@@ -197,10 +273,37 @@ function repo_initialize {
         git config --global --get user.email || git config --global user.email "anonymous@nowhere.com"
         if [ "$CONTRAIL_REPO_PROTO" == "ssh" ]; then
             if [ $CONTRAIL_BRANCH ];then
+                repo init -u git@github.com:shravani89/contrail-vnc -b $CONTRAIL_BRANCH
+            else
+                repo init -u git@github.com:shravani89/contrail-vnc
+            fi    
+        else
+            if [ $CONTRAIL_BRANCH ];then
+                repo init -u https://github.com/shravani89/contrail-vnc -b $CONTRAIL_BRANCH
+            else
+                repo init -u https://github.com/shravani89/contrail-vnc 
+            fi
+            
+            sed -i 's/fetch=".."/fetch=\"https:\/\/github.com\/shravani89\/\"/' .repo/manifest.xml
+            rev_original="refs\/heads\/master"
+            rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
+	    sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
+
+        fi
+    fi
+}
+
+function repo_initialize_backup {
+    echo "Initializing repo"
+    if [ ! -d $CONTRAIL_SRC/.repo ]; then
+        git config --global --get user.name || git config --global user.name "Anonymous"
+        git config --global --get user.email || git config --global user.email "anonymous@nowhere.com"
+        if [ "$CONTRAIL_REPO_PROTO" == "ssh" ]; then
+            if [ $CONTRAIL_BRANCH ];then
                 repo init -u git@github.com:Juniper/contrail-vnc -b $CONTRAIL_BRANCH
                 rev_original="refs\/heads\/master"
                 rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
-	            sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
+	        sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
             else
                 repo init -u git@github.com:Juniper/contrail-vnc 
             fi
@@ -209,7 +312,7 @@ function repo_initialize {
                 repo init -u https://github.com/Juniper/contrail-vnc -b $CONTRAIL_BRANCH
                 rev_original="refs\/heads\/master"
                 rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
-	            sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
+	        sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
             else
                 repo init -u https://github.com/Juniper/contrail-vnc 
             fi
@@ -300,7 +403,8 @@ function build_contrail() {
     C_GUID=$( id -g )
     sudo mkdir -p /var/log/contrail
     sudo chown $C_UID:$C_GUID /var/log/contrail
-
+    sudo chmod 755 /var/log/contrail/*
+    
     # basic dependencies
     if ! which repo > /dev/null 2>&1 ; then
 	wget http://commondatastorage.googleapis.com/git-repo-downloads/repo
@@ -311,8 +415,12 @@ function build_contrail() {
     #checking whether previous execution stage of script is at started then
     #only allow to get the dependencies
     if [[ $(read_stage) == "started" ]]; then
-    # dependencies
-        download_dependencies
+        # dependencies
+        download_dependencies 
+        if [ "$INSTALL_PROFILE" = "ALL" ]; then
+            download_redis
+            download_node_for_npm 
+        fi
         change_stage "started" "Dependencies"
     fi
    
@@ -333,43 +441,49 @@ function build_contrail() {
 
     contrail_cwd=$(pwd)
     cd $CONTRAIL_SRC
-    if [[ $(read_stage) == "python-dependencies" ]]; then
-        repo_initialize
-        change_stage "python-dependencies" "repo-init"
-    fi
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
+        if [[ $(read_stage) == "python-dependencies" ]]; then
+            repo_initialize
+            change_stage "python-dependencies" "repo-init"
+        fi
+   
+        if [[ $(read_stage) == "repo-init" ]]; then
+            repo sync
+            [[ $? -ne 0 ]] && echo "repo sync failed" && exit
+            change_stage "repo-init" "repo-sync"
+        fi
 
-    if [[ $(read_stage) == "repo-init" ]]; then
-        repo sync
-        [[ $? -ne 0 ]] && echo "repo sync failed" && exit
-        change_stage "repo-init" "repo-sync"
-    fi
+        if [[ $(read_stage) == "repo-sync" ]]; then
+            python third_party/fetch_packages.py
+            change_stage "repo-sync" "fetch-packages"
+        fi
 
-    if [[ $(read_stage) == "repo-sync" ]]; then
-        python third_party/fetch_packages.py
-        change_stage "repo-sync" "fetch-packages"
-    fi
-
-    (cd third_party/thrift-*; touch configure.ac README ChangeLog; autoreconf --force --install)
-    cd $CONTRAIL_SRC
-    if [ "$INSTALL_PROFILE" = "ALL" ]; then
-        if [[ $(read_stage) == "fetch-packages" ]]; then
-            sudo scons --opt=production
-            ret_val=$?
-            [[ $ret_val -ne 0 ]] && exit
-            change_stage "fetch-packages" "Build"
-       fi
-    elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
-        if [[ $(read_stage) == "fetch-packages" ]]; then
-            sudo scons --opt=production compute-node-install
-            ret_val=$?
-            [[ $ret_val -ne 0 ]] && exit
-            change_stage "fetch-packages" "Build"          
+        (cd third_party/thrift-*; touch configure.ac README ChangeLog; autoreconf --force --install)
+        cd $CONTRAIL_SRC
+        if [ "$INSTALL_PROFILE" = "ALL" ]; then
+            if [[ $(read_stage) == "fetch-packages" ]]; then
+                sudo scons --opt=production
+                ret_val=$?
+                [[ $ret_val -ne 0 ]] && exit
+                change_stage "fetch-packages" "Build"
+            fi
+        elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
+            if [[ $(read_stage) == "fetch-packages" ]]; then
+                sudo scons --opt=production compute-node-install
+                ret_val=$?
+                [[ $ret_val -ne 0 ]] && exit
+                change_stage "fetch-packages" "Build"          
+            fi
+        else
+            echo "Selected profile is neither ALL nor COMPUTE"
+            exit
         fi
     else
-        echo "Selected profile is neither ALL nor COMPUTE"
-        exit
-    fi
-   
+        sudo -E add-apt-repository -y ppa:opencontrail/ppa
+        sudo -E add-apt-repository -y ppa:opencontrail/snapshots
+        apt_get update
+        change_stage "python-dependencies" "Build"
+    fi  
 }
 
 function install_contrail() {
@@ -380,56 +494,92 @@ function install_contrail() {
     echo_summary "doing install_contrail "
     cd $CONTRAIL_SRC
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
-        if [[ $(read_stage) == "Build" ]]; then
-            sudo scons --opt=production install
-            ret_val=$?
-            [[ $ret_val -ne 0 ]] && exit
-            cd ${contrail_cwd}
+        if [[ $(read_stage) == "Build" ]] || [[ $(read_stage) == "install" ]]; then
+            if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
+	        sudo scons --opt=production install
+                ret_val=$?
+                [[ $ret_val -ne 0 ]] && exit
+                cd ${contrail_cwd}
 
-            # install contrail modules
-            echo "Installing contrail modules"
-            pip_install --upgrade $(find $CONTRAIL_SRC/build/production -name "*.tar.gz" -print)
+                # install contrail modules
+                echo "Installing contrail modules"
+                pip_install --upgrade $(find $CONTRAIL_SRC/build/production -name "*.tar.gz" -print)
 
-            # install VIF driver
-            #pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
+                # install VIF driver
+                pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
+                # install Neutron OpenContrail plugin
+                sudo pip install -e $CONTRAIL_SRC/openstack/neutron_plugin/
+  
+                # install neutron patch after VNC api is built and installed
+                # test_install_neutron_patch
 
-            # install neutron patch after VNC api is built and installed
-            # test_install_neutron_patch
+   
+                # get ifmap
+                #download_ifmap_irond
+                cd $CONTRAIL_SRC
+                sudo chown -R `whoami`:`whoami` build/
+                sudo -E make -f packages.make package-ifmap-server  
+                sudo cp $CONTRAIL_SRC/build/packages/ifmap-server/build/irond.jar $CONTRAIL_SRC/build/packages/ifmap-server  
+                # ncclient
+                download_ncclient
+ 
+                if [ ! -d $CONTRAIL_SRC/contrail-web-core/node_modules ]; then
+                    contrail_cwd=$(pwd)
+                    cd $CONTRAIL_SRC/contrail-web-core
+                    make fetch-pkgs-prod
+                    make dev-env REPO=webController
+                fi
 
+            else
+		cd ${contrail_cwd}		
+		# install contrail modules
+                echo "Installing contrail modules"
+                apt_get install contrail-config python-contrail contrail-utils 
+                apt_get install contrail-control contrail-analytics contrail-lib 
+                apt_get install python-contrail-vrouter-api contrail-vrouter-utils 
+                apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-vrouter-agent 
+                apt_get install neutron-plugin-contrail 
+                #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
+                apt_get install contrail-nova-driver contrail-webui-bundle
+                apt_get install ifmap-server python-ncclient
+            fi
             # get cassandra
             download_cassandra
-	    
-            # get ifmap
-            #download_ifmap_irond
-            cd $CONTRAIL_SRC
-            make -f packages.make package-ifmap-server  
-
+            sudo rabbitmqctl change_password guest $RABBIT_PASSWORD
             download_zookeeper
-
-            # ncclient
-            download_ncclient 
             change_stage "Build" "install"
+            
        fi
     elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
-        if [[ $(read_stage) == "Build" ]]; then
-            sudo scons --opt=production compute-node-install
-            ret_val=$?
-            [[ $ret_val -ne 0 ]] && exit
-            cd ${contrail_cwd}
+        if [[ $(read_stage) == "Build" ]] || [[ $(read_stage) == "install" ]]; then
+            if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+                sudo scons --opt=production compute-node-install
+                ret_val=$?
+                [[ $ret_val -ne 0 ]] && exit
+                cd ${contrail_cwd}
 
-            # install contrail modules
-            echo "Installing contrail modules"
-            pip_install --upgrade $(find $CONTRAIL_SRC/build/production -name "*.tar.gz" -print)
+                # install contrail modules
+                echo "Installing contrail modules"
+                pip_install --upgrade $(find $CONTRAIL_SRC/build/production -name "*.tar.gz" -print)
 
-            # install VIF driver
-            #pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
+                # install VIF driver
+                pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
+
+            else
+		cd ${contrail_cwd}		
+		# install contrail modules
+                echo "Installing contrail modules"
+                apt_get install contrail-config contrail-lib contrail-utils
+                apt_get install contrail-vrouter-utils contrail-vrouter-agent 
+                apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-nova-driver  
+            fi
+
             change_stage "Build" "install"         
         fi
     else
         echo "Selected profile is neither ALL nor COMPUTE"
         exit
     fi
-    
     echo "finished install_contrail"
     echo_summary "finished install_contrail"
 }
@@ -473,16 +623,25 @@ function insert_vrouter() {
 	NETMASK=$(sudo ifconfig $EXT_DEV | sed -ne 's/.*mask[: *]\([0-9.]*\).*/\1/i p')
     fi
     # don't die in small memory environments
-    sudo insmod $CONTRAIL_SRC/$kmod vr_flow_entries=4096 vr_oflow_entries=512
-
-    echo "Creating vhost interface: $DEVICE."
-    VIF=$CONTRAIL_SRC/build/production/vrouter/utils/vif
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+        sudo insmod $CONTRAIL_SRC/vrouter/$kmod vr_flow_entries=4096 vr_oflow_entries=512
+        echo "Creating vhost interface: $DEVICE."
+        VIF=$CONTRAIL_SRC/build/production/vrouter/utils/vif
+    else    
+        vrouter_pkg_version=$(zless /usr/share/doc/contrail-vrouter-agent/changelog.gz )
+        vrouter_pkg_version=${vrouter_pkg_version#* (*}
+        vrouter_pkg_version=${vrouter_pkg_version%*)*}        
+        sudo insmod /var/lib/dkms/vrouter/$vrouter_pkg_version/build/$kmod vr_flow_entries=4096 vr_oflow_entries=512
+        echo "Creating vhost interface: $DEVICE."
+        VIF=/usr/bin/vif
+    fi 
+    
     DEV_MAC=$(cat /sys/class/net/$dev/address)
     sudo $VIF --create $DEVICE --mac $DEV_MAC \
         || echo "Error creating interface: $DEVICE"
 
     echo "Adding $DEVICE to vrouter"
-    sudo $VIF --add $DEVICE --mac $DEV_MAC --vrf 0 --mode x --type vhost \
+    sudo $VIF --add $DEVICE --mac $DEV_MAC --vrf 0 --xconnect $dev --mode x --type vhost \
 	|| echo "Error adding $DEVICE to vrouter"
 
     echo "Adding $dev to vrouter"
@@ -547,7 +706,13 @@ function pywhere() {
 }
 
 function start_contrail() {
-   
+    
+    mkdir -p $TOP_DIR/status/contrail/ 
+    pid_count=`ls $TOP_DIR/status/contrail/*.pid|wc -l`
+    if [[ $pid_count != 0 ]]; then
+        echo "contrail is already running to restart use contrail.sh stop and contrail.sh start"
+        exit 
+    fi
     # save screen settings
     SAVED_SCREEN_NAME=$SCREEN_NAME
     SCREEN_NAME="contrail"
@@ -575,9 +740,12 @@ function start_contrail() {
 
         screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh start"
 
-        screen_it ifmap "cd $CONTRAIL_SRC/third_party/irond-0.3.0-bin; java -jar ./irond.jar"
+	if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+            screen_it ifmap "cd $CONTRAIL_SRC/build/packages/ifmap-server; java -jar ./irond.jar"
+        else
+            screen_it ifmap "cd /usr/share/ifmap-server; java -jar ./irond.jar" 
+        fi
         sleep 2
-    
     
         screen_it disco "python $(pywhere discovery)/disc_server_zk.py --reset_config --conf_file /etc/contrail/discovery.conf"
         sleep 2
@@ -594,7 +762,44 @@ function start_contrail() {
         screen_it svc-mon "python $(pywhere svc_monitor)/svc_monitor.py --reset_config --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
-        screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; $CONTRAIL_SRC/build/production/control-node/control-node --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; $CONTRAIL_SRC/build/production/control-node/control-node --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+        else
+            screen_it control "export LD_LIBRARY_PATH=/usr/lib; /usr/bin/control-node --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+        fi
+        # collector services
+        # redis-uve
+        screen_it redis-u "sudo redis-server /etc/contrail/redis-uve.conf"
+        sleep 2
+        # redis-query
+        screen_it redis-q "sudo redis-server /etc/contrail/redis-query.conf"
+        sleep 2
+
+        # collector/vizd
+        source /etc/contrail/vizd_param
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+            screen_it vizd "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+        else
+            screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+        fi
+        sleep2
+
+        #opserver_param  
+        source /etc/contrail/opserver_param
+        screen_it opserver "python  $(pywhere opserver)/opserver.py --collectors ${COLLECTORS} --host_ip ${HOST_IP} ${LOG_FILE} ${LOG_LOCAL}"
+        sleep 2
+
+        #qed_param
+        source /etc/contrail/qed_param
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
+            screen_it qed "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+        else
+            screen_it qed "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+        fi
+        sleep 2
+
+        #provision control
+        python $TOP_DIR/provision_control.py --api_server_ip $SERVICE_HOST --api_server_port 8082 --host_name $HOSTNAME --host_ip $HOST_IP
 
         # Provision Vrouter - must be run after API server and schema transformer are up
         sleep 2
@@ -611,7 +816,11 @@ function start_contrail() {
     # agent
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         sudo sysctl -w net.ipv4.ip_forward=1
-        sudo /opt/stack/contrail/build/production/vrouter/utils/vif --create vgw --mac 00:01:00:5e:00:00
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+            sudo /opt/stack/contrail/build/production/vrouter/utils/vif --create vgw --mac 00:01:00:5e:00:00
+        else
+            sudo /usr/bin/vif --create vgw --mac 00:01:00:5e:00:00
+        fi            
         sudo ifconfig vgw up
         sudo route add -net $CONTRAIL_VGW_PUBLIC_SUBNET dev vgw
     fi
@@ -633,12 +842,21 @@ EOF
 EOF2
     fi
     chmod a+x $TOP_DIR/bin/contrail-version
-
-    cat > $TOP_DIR/bin/vnsw.hlpr <<END
+    
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+        cat > $TOP_DIR/bin/vnsw.hlpr <<END
 #! /bin/bash
 PATH=$TOP_DIR/bin:$PATH
-LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/vnsw/agent/vnswad --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
+LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/vnsw/agent/contrail/vnswad --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
 END
+  
+    else
+        cat > $TOP_DIR/bin/vnsw.hlpr <<END
+#! /bin/bash
+PATH=$TOP_DIR/bin:$PATH
+LD_LIBRARY_PATH=/usr/lib /usr/bin/vnswad --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
+END
+    fi
     chmod a+x $TOP_DIR/bin/vnsw.hlpr
     screen_it agent "sudo $TOP_DIR/bin/vnsw.hlpr"
 
@@ -652,6 +870,17 @@ END
 	    --ipfabric_service_ip $Q_META_DATA_IP \
 	    --ipfabric_service_port 8775 \
 	    --oper add
+    fi
+    
+    if [ "$INSTALL_PROFILE" = "ALL" ]; then
+        screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
+            screen_it ui-jobs "cd /opt/stack/contrail/contrail-web-core; sudo node jobServerStart.js"
+            screen_it ui-webs "cd /opt/stack/contrail/contrail-web-core; sudo node webServerStart.js"
+        else
+            screen_it ui-jobs "cd /var/lib/contrail-webui-bundle; sudo node jobServerStart.js"
+            screen_it ui-webs "cd /var/lib/contrail-webui-bundle; sudo node webServerStart.js"
+        fi
     fi
 
 
@@ -680,10 +909,12 @@ function configure_contrail() {
     # )
 
     #defaults loading
-    if [[ ! -d "/etc/contrail" ]]; then
-        sudo mkdir -p /etc/contrail
-        sudo chown `whoami` /etc/contrail
-    fi
+    sudo mkdir -p /etc/contrail
+    sudo mkdir -p /etc/sysconfig/network-scripts    
+    sudo chown -R `whoami` /etc/contrail
+    sudo chmod  664 /etc/contrail/*
+    sudo chown -R `whoami` /etc/sysconfig/network-scripts
+    sudo chmod  664 /etc/sysconfig/network-scripts/*
     cd $TOP_DIR  
     
     #un-comment if required after review
@@ -713,8 +944,6 @@ function configure_contrail() {
     write_ifcfg-vhost0
     write_default_pmac 
     write_qemu_conf
-    replace_vizd_param
-    replace_qed_param
     fixup_config_files
 }
 
@@ -728,7 +957,7 @@ function check_contrail() {
 
 function clean_contrail() {
     echo_summary "starting clean_contrail"
-    python clean.py
+    python clean.py --conf_file 
     echo_summary "Finished clean_contrail"
 
 }
@@ -754,6 +983,14 @@ function stop_contrail() {
         screen_stop schema
         screen_stop svc-mon
         screen_stop control
+        screen_stop redis-u
+        screen_stop redis-q
+        screen_stop vizd
+        screen_stop opserver
+        screen_stop qed
+        screen_stop redis-w
+        screen_stop ui-jobs
+        screen_stop ui-webs
     fi
     screen_stop agent  
     cmd=$(lsmod | grep vrouter)
@@ -788,10 +1025,7 @@ function stop_contrail() {
 trap clean EXIT
 clean() {
     local r=$?
-    if [[ $r -ne 0 ]]; then
-        echo "killing background processes"
-        kill >/dev/null 2>&1 $(jobs -p)
-    fi
+    echo "exited with status :$r"
     exit $r
 }
 
@@ -800,7 +1034,6 @@ clean() {
 trap interrupt SIGINT
 interrupt() {
     local r=$?
-    kill >/dev/null 2>&1 $(jobs -p)
     set -o xtrace
     echo "keyboard interrupt"
     exit $r
@@ -811,6 +1044,7 @@ interrupt() {
 OPTION=$1
 ARGS_COUNT=$#
 setup_logging
+setup_root_access
 if [ $ARGS_COUNT -eq 1 ] && [ "$OPTION" == "install" ] || [ "$OPTION" == "start" ] || [ "$OPTION" == "configure" ] || [ "$OPTION" == "clean" ] || [ "$OPTION" == "stop" ] || [ "$OPTION" == "build" ]; 
 then
     ${OPTION}_contrail

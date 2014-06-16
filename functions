@@ -1149,6 +1149,11 @@ function screen_it {
            
             run_process "$1" "$2" >$SERVICE_DIR/$SCREEN_NAME/$1.pid
         fi
+        #for the agent service the script is taken care for starting services but it is not killing the process with vnswad 
+        if [[ "$1" == "agent" ]]; then
+            sleep 5 
+            ps aux | grep vnswad | head -1 | awk '{print $2}' >$SERVICE_DIR/$SCREEN_NAME/$1_1.pid 
+        fi
 #      else
 #        echo "SERVICE IS NOT ENABLED"
 #    fi
@@ -1172,9 +1177,13 @@ function screen_stop() {
             ret_val=$?
             #If the pid is not parent pid then kill the same process itself
             if [[ $ret_val -ne 0 ]]; then
-                kill -9 $(cat $SERVICE_DIR/$SCREEN_NAME/$1.pid)
+                sudo kill -9 $(cat $SERVICE_DIR/$SCREEN_NAME/$1.pid)
             fi
             rm $SERVICE_DIR/$SCREEN_NAME/$1.pid
+        fi
+        if [[ "$1" == "agent" ]]; then
+            sudo kill -9 $(cat $SERVICE_DIR/$SCREEN_NAME/$1_1.pid)
+            rm $SERVICE_DIR/$SCREEN_NAME/$1_1.pid
         fi
         if [[ "$USE_SCREEN" = "True" ]]; then
             # Clean up the screen window
@@ -2038,10 +2047,14 @@ function validstage_atoption() {
             ret_val=0
         elif [ $current_stage == "fetch-packages" ]; then
             ret_val=0
+        elif [ $current_stage == "Build" ]; then
+            ret_val=0
         fi
     fi
     if [ $option == "install" ]; then
         if [ $current_stage == "Build" ]; then
+            ret_val=0
+        elif [ $current_stage == "install" ]; then
             ret_val=0
         fi
     fi
