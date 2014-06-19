@@ -538,7 +538,7 @@ function install_contrail() {
                 apt_get install contrail-control contrail-analytics contrail-lib 
                 apt_get install python-contrail-vrouter-api contrail-vrouter-utils 
                 apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-vrouter-agent 
-                apt_get install neutron-plugin-contrail 
+                apt_get install neutron-plugin-contrail contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
                 apt_get install contrail-nova-driver contrail-webui-bundle
                 apt_get install ifmap-server python-ncclient
@@ -780,7 +780,7 @@ function start_contrail() {
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
             screen_it vizd "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
         else
-            screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+            screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
         fi
         sleep2
 
@@ -794,7 +794,7 @@ function start_contrail() {
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
             screen_it qed "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
         else
-            screen_it qed "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+            screen_it qed "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
         fi
         sleep 2
 
@@ -1035,6 +1035,11 @@ trap interrupt SIGINT
 interrupt() {
     local r=$?
     set -o xtrace
+    if [[ $(read_stage) == "python-dependencies" ]]; then
+        if [[ -d $CONTRAIL_SRC/.repo ]];then
+            sudo rm -r $CONTRAIL_SRC/.repo
+        fi
+    fi
     echo "keyboard interrupt"
     exit $r
 }
