@@ -217,7 +217,8 @@ function download_dependencies {
         apt_get install python-dev autoconf automake build-essential libtool
         apt_get install libevent-dev libxml2-dev libxslt-dev
         apt_get install uml-utilities
-        apt_get install python-setuptools python-novaclient python-ncclient
+        apt_get install python-setuptools
+        apt_get install  python-novaclient 
         apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
@@ -538,7 +539,8 @@ function install_contrail() {
                 apt_get install contrail-control contrail-analytics contrail-lib 
                 apt_get install python-contrail-vrouter-api contrail-vrouter-utils 
                 apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-vrouter-agent 
-                apt_get install neutron-plugin-contrail contrail-config-openstack
+                apt_get install neutron-plugin-contrail 
+                apt_get install contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
                 apt_get install contrail-nova-driver contrail-webui-bundle
                 apt_get install ifmap-server python-ncclient
