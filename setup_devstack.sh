@@ -5,7 +5,7 @@ DEVSTACK_CLONE_DIR=$CONTRAIL_DIR/../
 DEVSTACK_DIR=$DEVSTACK_CLONE_DIR/devstack
 RECLONE=${RECLONE:-False}
 
-echo $RECLONE
+#echo $RECLONE
 
 if [[ "$RECLONE" == "True" ]]; then
     echo "Removing the current devstack and recloning again"
@@ -42,8 +42,6 @@ function replace_in_file()
     file=$1
     regexp=$2
     replace=$3
-    echo $regexp
-    echo $replace
     sed -in 's|.*\b'"$regexp"'.*\b|'"$replace"'|g' $file
 }
 
@@ -52,7 +50,7 @@ file=$DEVSTACK_DIR/stackrc
 sudo grep -q  ^"CONTRAIL_GIT_BASE" $file
 value=$?
 if [[ $value -eq 1 ]]; then
-    sudo echo "CONTRAIL_GIT_BASE=${CONTRAIL_GIT_BASE:-https://github.com/juniper}" >> $file
+    sed -i '206 a\CONTRAIL_GIT_BASE=${CONTRAIL_GIT_BASE:-https://github.com/juniper}\'  $file
 fi    
 replace_in_file $file "NEUTRON_REPO" "#NEUTRON_REPO"
 replace_in_file $file "NEUTRON_BRANCH" "#NEUTRON_BRANCH"

@@ -253,7 +253,7 @@ function download_python_dependencies {
     pip_install netifaces fabric argparse
     pip_install bottle
     pip_install uuid psutil
-    pip_install netaddr bitarray 
+    pip_install netaddr bitarray greenlet
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
@@ -707,6 +707,15 @@ function pywhere() {
     python -c "import $module; import os; print os.path.dirname($module.__file__)"
 }
 
+function stop_contrail_services() {
+
+    services=(contrail-analytics-api contrail-control contrail-query-engine contrail-vrouter-agent contrail-api contrail-discovery contrail-schema contrail-webui-jobserver contrail-collector contrail-dns contrail-svc-monitor contrail-webui-webserver ifmap-server)
+    for service in ${services[@]} 
+    do
+        sudo service $service stop
+    done
+}
+
 function start_contrail() {
     
     mkdir -p $TOP_DIR/status/contrail/ 
@@ -715,6 +724,7 @@ function start_contrail() {
         echo "contrail is already running to restart use contrail.sh stop and contrail.sh start"
         exit 
     fi
+    sudo apt-get remove --force-yes python-greenlet
     # save screen settings
     SAVED_SCREEN_NAME=$SCREEN_NAME
     SCREEN_NAME="contrail"
@@ -734,6 +744,9 @@ function start_contrail() {
             CASS_PATH="$CONTRAIL_SRC/third_party/apache-cassandra-2.0.2/bin/cassandra"
         fi
 
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]]; then
+            stop_contrail_services
+        fi
         # launch ...
         redis-cli flushall
         screen_it redis "sudo redis-server $REDIS_CONF"

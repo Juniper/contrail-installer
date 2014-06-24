@@ -25,7 +25,7 @@ source $TOP_DIR/functions
 # Handle arguments
 
 USE_GET_PIP=${USE_GET_PIP:-0}
-INSTALL_PIP_VERSION=${INSTALL_PIP_VERSION:-"1.4.1"}
+INSTALL_PIP_VERSION=${INSTALL_PIP_VERSION:-"1.5.6"}
 while [[ -n "$1" ]]; do
     case $1 in
         --force)
