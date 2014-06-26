@@ -219,6 +219,7 @@ function download_dependencies {
         apt_get install uml-utilities
         apt_get install python-setuptools
         apt_get install  python-novaclient 
+        apt_get install python-greenlet
         apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
@@ -254,6 +255,7 @@ function download_python_dependencies {
     pip_install bottle
     pip_install uuid psutil
     pip_install netaddr bitarray greenlet
+    pip_install --upgrade redis
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
@@ -275,21 +277,22 @@ function repo_initialize {
         if [ "$CONTRAIL_REPO_PROTO" == "ssh" ]; then
             if [ $CONTRAIL_BRANCH ];then
                 repo init -u git@github.com:shravani89/contrail-vnc -b $CONTRAIL_BRANCH
+                rev_original="refs\/heads\/master"
+                rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
+	        sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
             else
                 repo init -u git@github.com:shravani89/contrail-vnc
             fi    
         else
             if [ $CONTRAIL_BRANCH ];then
                 repo init -u https://github.com/shravani89/contrail-vnc -b $CONTRAIL_BRANCH
+                rev_original="refs\/heads\/master"
+                rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
+	        sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
             else
                 repo init -u https://github.com/shravani89/contrail-vnc 
             fi
-            
             sed -i 's/fetch=".."/fetch=\"https:\/\/github.com\/shravani89\/\"/' .repo/manifest.xml
-            rev_original="refs\/heads\/master"
-            rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
-	    sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
-
         fi
     fi
 }
