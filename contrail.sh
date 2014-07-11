@@ -212,6 +212,7 @@ function download_node_for_npm {
 function download_dependencies {
     echo "Downloading dependencies"
     if is_ubuntu; then
+        apt_get update
         apt_get install patch scons flex bison make vim unzip
         apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
         apt_get install python-dev autoconf automake build-essential libtool
@@ -913,6 +914,12 @@ function configure_contrail() {
 
     echo "doing configure_contrail"
     echo_summary "doing configure_contrail "
+
+    C_UID=$( id -u )
+    C_GUID=$( id -g )
+    sudo mkdir -p /var/log/contrail
+    sudo chown -R $C_UID:$C_GUID /var/log/contrail
+    sudo chmod -R 755 /var/log/contrail/*
 
     # process gateway configuration if present
     #contrail_gw_interface=""
