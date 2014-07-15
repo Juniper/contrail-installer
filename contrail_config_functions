@@ -366,7 +366,7 @@ function replace_contrail_compute_conf()
         check_replace_value $file "" dev $PHYSICAL_INTERFACE
         remove_spaces $file DEFAULTS
     else
-        echo_summary_summary "interface not found try another interface inside else"
+        echo "interface not found try another interface inside else"
         exit 1
     fi
 

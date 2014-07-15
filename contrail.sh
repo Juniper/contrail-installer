@@ -218,9 +218,10 @@ function download_dependencies {
         apt_get install python-dev autoconf automake build-essential libtool
         apt_get install libevent-dev libxml2-dev libxslt-dev
         apt_get install uml-utilities
+        apt_get install python-software-properties
         apt_get install python-setuptools
-        apt_get install  python-novaclient 
-        #apt_get install python-greenlet
+        apt_get install python-novaclient 
+        apt_get install python-greenlet
         apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
@@ -728,7 +729,6 @@ function start_contrail() {
         echo "contrail is already running to restart use contrail.sh stop and contrail.sh start"
         exit 
     fi
-    #sudo apt-get remove --force-yes python-greenlet
     # save screen settings
     SAVED_SCREEN_NAME=$SCREEN_NAME
     SCREEN_NAME="contrail"
