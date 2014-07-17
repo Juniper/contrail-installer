@@ -1,0 +1,89 @@
+﻿#########################################################################################
+@@@@@@   Procedure to install contrail-installer with source code enabled   @@@@@@
+#########################################################################################
+
+1. Clone the fresh contrail-installer repository from the git by using command below
+
+    git clone https://github.com/shravani89/contrail-installer -b test-m1-build 
+
+2. Copy the file localrc-all from samples directory to the current directory as localrc and 
+   make sure that localrc file have the following changes 
+
+To disable the binary installation and download, 
+    CONTRAIL_DEFAULT_INSTALL=False 
+    If binaries need to be downloaded and installed make above “True”
+
+Branch that points to the changes made in scons directory
+    CONTRAIL_BRANCH=test-m1-build 
+
+To download the ALL dependencies, 
+    INSTALL_PROFILE=ALL
+    If only COMPUTE source code needs to be downloaded and installed, use “COMPUTE”.
+
+To use screens,
+    USE_SCREEN=True 
+
+3. Build the contrail with all the required packages using the command
+
+    ./contrail.sh build
+
+4. To install contrail modules and its dependencies, run “./contrail.sh install “, which will Install 
+   all the necessary Modules to start the contrail services 
+
+
+5. Configure the contrail using “./contrail.sh configure” such that it makes the necessary changes in 
+   the files in /etc/contrail which are used by the contrail services  
+
+Files that are modified in configure phase are
+    /etc/contrail/contrail-api.conf
+    /etc/contrail/contrail_plugin.ini
+    /etc/contrail/contrail-schema.conf
+    /etc/contrail/svc-monitor.conf
+    /etc/contrail/discovery.conf
+    /etc/contrail/vnc_api_lib.ini
+    /etc/contrail/ContrailPlugin.ini
+    /etc/contrail/contrail-control.conf
+    /etc/contrail/dns.conf
+    /etc/contrail/contrail-compute.conf
+    /etc/contrail/contrail-vrouter-agent.conf
+    /etc/ifmap-server/basicauthusers.properties
+    /etc/contrail/default_pmac
+    /etc/contrail/ifcfg-vhost0
+    /etc/libvirt/qemu.conf
+    /etc/contrail/ctrl-details
+    /etc/contrail/vizd_param
+    /etc/contrail/qed_param
+    /etc/contrail/opserver_param
+
+6. Start the contrail services using the command
+
+    ./contrail.sh start
+
+7. To stop the contrail services at any time use
+
+    ./contrail.sh stop
+
+8. Clean is enabled in this version so that we can run clean using
+
+    ./contrail.sh clean
+
+NOTE: Clean option should be run when all the contrail services are UP and Running
+
+9. ‘setup_devstack.sh’ script will clone the specified devstack repository to the previous directory 
+    from current working directory. Copies the localrc-multinode-server file from contrail-installer/samples 
+    directory to the devstack directory as localrc.
+    ‘contrail’ file is added to the devstack/lib/neutron_plugins/ directory from the current working directory.
+    By default, localrc file will have all the changes required for the muiltiserver node.
+    'contrail' file will act as an interface between the contrail and the openstack.
+
+In 'stackrc', NEUTRON_REPO, NEUTRON_BRANCH variable values are changed and CONTRAIL_GIT_BASE variable 
+is added in this script so that neutron repo points to the juniper neutron repo
+    
+    CONTRAIL_GIT_BASE=https://github.com/juniper 
+    NEUTRON_REPO=contrail/havana
+    NEUTRON_BRANCH=${CONTRAIL_GIT_BASE}/neutron.git
+
+NOTE: Current working directory implies the directory where the repository contrail-installer is cloned.
+
+10. 'service.sh' script is used to start, stop and restart the services if USE_SCREEN is False.
+
