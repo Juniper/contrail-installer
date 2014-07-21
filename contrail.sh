@@ -48,7 +48,7 @@ OPENSTACK_IP=${OPENSTACK_IP:-$CFGM_IP}
 COLLECTOR_IP=${COLLECTOR_IP:-$CFGM_IP}
 DISCOVERY_IP=${DISCOVERY_IP:-$CFGM_IP}
 CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
-CONTRAIL_DEFAULT_INSTALL=${$CONTRAIL_DEFAULT_INSTALL:-True}
+CONTRAIL_DEFAULT_INSTALL=${CONTRAIL_DEFAULT_INSTALL:-True}
 
 if [[ "$RECLONE" == "True" ]]; then
     echo "Recloning the contrail again"
@@ -252,11 +252,12 @@ function download_python_dependencies {
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
     pip_install --upgrade setuptools
+    pip_install -U greenlet
     pip_install gevent geventhttpclient==1.0a thrift
     pip_install netifaces fabric argparse
     pip_install bottle
     pip_install uuid psutil
-    pip_install netaddr bitarray greenlet
+    pip_install netaddr bitarray 
     pip_install --upgrade redis
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
