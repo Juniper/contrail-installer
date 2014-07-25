@@ -20,6 +20,12 @@ source localrc
 BS_FL_CONTROLLERS_PORT=${BS_FL_CONTROLLERS_PORT:-localhost:80}
 BS_FL_OF_PORT=${BS_FL_OF_PORT:-6633}
 
+# Cassandra JAVA Memory Options
+CASS_MAX_HEAP_SIZE=${CASS_MAX_HEAP_SIZE:-1G}
+CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-200M}
+GIT_BASE=${GIT_BASE:-git://github.com}
+CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-master}
+
 unset LANG
 unset LANGUAGE
 LC_ALL=C
@@ -198,14 +204,17 @@ function download_redis {
 function download_node_for_npm {
     # install node which brings npm that's used in fetch_packages.py
     if ! which node > /dev/null 2>&1 || ! which npm > /dev/null 2>&1 ; then
-        wget http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz -O node-v0.8.15.tar.gz
-        tar -xf node-v0.8.15.tar.gz
-        contrail_cwd=$(pwd)
-        cd node-v0.8.15
-        ./configure; make; sudo make install
-        cd ${contrail_cwd}
-        rm -rf node-v0.8.15.tar.gz
-        rm -rf node-v0.8.15
+        # download nodejs if building from source or centos
+        if "$CONTRAIL_DEFAULT_INSTALL" != "True" || ! is_ubuntu; then    
+            wget http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz -O node-v0.8.15.tar.gz
+            tar -xf node-v0.8.15.tar.gz
+            contrail_cwd=$(pwd)
+            cd node-v0.8.15
+            ./configure; make; sudo make install
+            cd ${contrail_cwd}
+            rm -rf node-v0.8.15.tar.gz
+            rm -rf node-v0.8.15
+        fi
     fi
 }
 
@@ -281,23 +290,23 @@ function repo_initialize {
         git config --global --get user.email || git config --global user.email "anonymous@nowhere.com"
         if [ "$CONTRAIL_REPO_PROTO" == "ssh" ]; then
             if [ $CONTRAIL_BRANCH ];then
-                repo init -u git@github.com:shravani89/contrail-vnc -b $CONTRAIL_BRANCH
+                repo init -u git@github.com:juniper/contrail-vnc -b $CONTRAIL_BRANCH
                 rev_original="refs\/heads\/master"
                 rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
 	        sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
             else
-                repo init -u git@github.com:shravani89/contrail-vnc
+                repo init -u git@github.com:juniper/contrail-vnc
             fi    
         else
             if [ $CONTRAIL_BRANCH ];then
-                repo init -u https://github.com/shravani89/contrail-vnc -b $CONTRAIL_BRANCH
+                repo init -u https://github.com/juniper/contrail-vnc -b $CONTRAIL_BRANCH
                 rev_original="refs\/heads\/master"
                 rev_new="refs\/heads\/"$CONTRAIL_BRANCH 
 	        sed -i "s/$rev_original/$rev_new/" .repo/manifest.xml
             else
-                repo init -u https://github.com/shravani89/contrail-vnc 
+                repo init -u https://github.com/juniper/contrail-vnc 
             fi
-            sed -i 's/fetch=".."/fetch=\"https:\/\/github.com\/shravani89\/\"/' .repo/manifest.xml
+            sed -i 's/fetch=".."/fetch=\"https:\/\/github.com\/juniper\/\"/' .repo/manifest.xml
         fi
     fi
 }
@@ -377,7 +386,7 @@ function download_cassandra {
 
 function download_zookeeper {
     echo "Downloading zookeeper"
-    if [ ! -d $CONTRAIL_SRC/third_party/zookeeper-3.4.5 ]; then
+    if [ ! -d $CONTRAIL_SRC/third_party/zookeeper-3.4.6 ]; then
         contrail_cwd=$(pwd)
         cd $CONTRAIL_SRC/third_party
         wget http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-3.4.6.tar.gz
@@ -540,14 +549,15 @@ function install_contrail() {
                 fi
 
             else
-		cd ${contrail_cwd}		
+                git_clone $GIT_BASE/juniper/contrail-neutron-plugin openstack/neutron_plugin $CONTRAIL_BRANCH
+                sudo pip install -e $CONTRAIL_SRC/openstack/neutron_plugin/
 		# install contrail modules
                 echo "Installing contrail modules"
                 apt_get install contrail-config python-contrail contrail-utils 
                 apt_get install contrail-control contrail-analytics contrail-lib 
                 apt_get install python-contrail-vrouter-api contrail-vrouter-utils 
                 apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-vrouter-agent 
-                apt_get install neutron-plugin-contrail 
+                #apt_get install neutron-plugin-contrail 
                 apt_get install contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
                 apt_get install contrail-nova-driver contrail-webui-bundle
@@ -758,7 +768,7 @@ function start_contrail() {
         redis-cli flushall
         screen_it redis "sudo redis-server $REDIS_CONF"
 
-        screen_it cass "sudo $CASS_PATH -f"
+        screen_it cass "sudo MAX_HEAP_SIZE=$CASS_MAX_HEAP_SIZE HEAP_NEWSIZE=$CASS_HEAP_NEWSIZE $CASS_PATH -f"
 
         screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh start"
 
@@ -773,7 +783,7 @@ function start_contrail() {
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
-        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf  --rabbit_password ${RABBIT_PASSWORD}"
+        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf --reset_config --rabbit_password ${RABBIT_PASSWORD}"
         echo "Waiting for api-server to start..."
         if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= wget -q -O- http://${SERVICE_HOST}:8082; do sleep 1; done"; then
             echo "api-server did not start"
@@ -1027,10 +1037,9 @@ function stop_contrail() {
         if [ $? == 0 ]; then
             source /etc/contrail/contrail-compute.conf
             if is_ubuntu; then
-                sudo ifconfig  $dev down
-                sleep 10 
+                sudo ifdown  $dev
+                sudo ifup    $dev
                 sudo ifdown vhost0
-                sudo ifconfig  $dev up
                 
             else
                 sudo rm -f /etc/sysconfig/network-scripts/ifcfg-$dev
