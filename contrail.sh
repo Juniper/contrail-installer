@@ -227,6 +227,7 @@ function download_dependencies {
         apt_get install chkconfig screen
         apt_get install ant debhelper default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
+        apt_get install linux-headers-$(uname -r)
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
             apt_get install python-kombu
@@ -242,6 +243,7 @@ function download_dependencies {
         sudo yum -y install python-lxml
         sudo yum -y install curl
         sudo yum -y install chkconfig
+        sudo yum -y install kernel-headers
     fi
     
 }
