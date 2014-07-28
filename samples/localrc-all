@@ -5,6 +5,7 @@ LOG=True
 DEBUG=True
 LOGFILE=$STACK_DIR/log/contrail.log
 LOGDAYS=1
+USE_SCREEN=True
 
 DATABASE_PASSWORD=contrail123
 RABBIT_PASSWORD=contrail123
@@ -16,17 +17,12 @@ SERVICE_TIMEOUT=90
 SERVICE_HOST=localhost
 INSTALL_PROFILE=ALL 
 PHYSICAL_INTERFACE=eth0
+
 # to get source code make it as False 
-# CONTRAIL_DEFAULT_INSTALL=True
+CONTRAIL_DEFAULT_INSTALL=True
 
 # repo proto is https or (default) ssh. Leave commented for ssh
 # CONTRAIL_REPO_PROTO=https
 
-# Contrail branch on which repo init has to be done.
-# CONTRAIL_BRANCH=test-m1-build
-
 # proto for openstack bits. Use HTTPS if git is firewalled
-# GIT_BASE=https://git.openstack.org
-
-# use contrail VIF driver with NOVA
-NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
+GIT_BASE=https://github.com
