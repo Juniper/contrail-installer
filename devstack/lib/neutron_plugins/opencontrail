@@ -1,0 +1,54 @@
+# Opencontrail Neutron Plugin
+# -------------------------------
+
+# Save trace settings
+MY_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+CONTRAIL_CONF_DIR=/etc/contrail
+
+function neutron_plugin_create_nova_conf() {
+    NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
+}
+
+function neutron_plugin_configure_common() {
+    Q_PLUGIN_CONF_PATH=etc/neutron/plugins/opencontrail
+    Q_PLUGIN_CONF_FILENAME=ContrailPlugin.ini
+    Q_DB_NAME=neutron
+    Q_PLUGIN_CLASS=neutron_plugin_contrail.plugins.opencontrail.contrailplugin.ContrailPlugin
+
+    local NEUTRON_CONF_PLUGIN_DIR=$NEUTRON_DIR/$Q_PLUGIN_CONF_PATH
+    mkdir -p $NEUTRON_CONF_PLUGIN_DIR
+    touch $NEUTRON_CONF_PLUGIN_DIR/$Q_PLUGIN_CONF_FILENAME
+    cp $CONTRAIL_CONF_DIR/$Q_PLUGIN_CONF_FILENAME $NEUTRON_CONF_PLUGIN_DIR/
+}
+
+function neutron_plugin_configure_service() {
+    iniset $NEUTRON_CONF quotas quota_driver neutron.quota.ConfDriver
+    local PY_PLUGIN_PATH=$(python -c "import neutron_plugin_contrail; print neutron_plugin_contrail.__path__[0]")
+    iniset $NEUTRON_CONF DEFAULT api_extensions_path extensions:$PY_PLUGIN_PATH/extensions
+}
+
+function neutron_plugin_setup_interface_driver() {
+    :
+}
+
+function neutron_plugin_configure_debug_command() {
+    :
+}
+
+function is_neutron_ovs_base_plugin() {
+    # False
+    return 1
+}
+
+function has_neutron_plugin_security_group() {
+    # True
+    return 1
+}
+
+function neutron_plugin_check_adv_test_requirements() {
+    return 0
+}
+# Restore xtrace
+$MY_XTRACE

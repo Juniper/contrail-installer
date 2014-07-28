@@ -1,0 +1,29 @@
+STACK_DIR=$(cd $(dirname $0) && pwd)
+
+LOG_DIR=$STACK_DIR/log/screens
+LOG=True
+DEBUG=True
+LOGFILE=$STACK_DIR/log/stack.log
+LOGDAYS=1
+
+disable_service n-net
+enable_service q-svc
+enable_service q-meta
+enable_service neutron
+
+# not used by contrail
+disable_service q-agt
+disable_service q-dhcp
+disable_service q-l3
+
+DATABASE_PASSWORD=contrail123
+RABBIT_PASSWORD=contrail123
+SERVICE_TOKEN=contrail123
+SERVICE_PASSWORD=contrail123
+ADMIN_PASSWORD=contrail123
+
+Q_PLUGIN=opencontrail
+PHYSICAL_INTERFACE=eth0
+
+# proto for openstack bits. Use HTTPS if git is firewalled
+GIT_BASE=https://git.openstack.org
