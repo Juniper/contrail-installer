@@ -1,0 +1,22 @@
+function configure_opencontrail() {
+    :
+}
+
+function init_opencontrail() {
+    :
+}
+
+function install_opencontrail() {
+}
+
+function start_opencontrail() {
+    :
+}
+
+function stop_opencontrail() {
+    :
+}
+
+function check_opencontrail() {
+    :
+}
