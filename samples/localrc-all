@@ -24,5 +24,8 @@ CONTRAIL_DEFAULT_INSTALL=True
 # repo proto is https or (default) ssh. Leave commented for ssh
 # CONTRAIL_REPO_PROTO=https
 
+# need the following temporarily to avoid subnet name issue
+NEUTRON_PLUGIN_BRANCH=aa40d25a62e4f908b099804b255d548de2a01a7f
+
 # proto for openstack bits. Use HTTPS if git is firewalled
 GIT_BASE=https://github.com

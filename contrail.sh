@@ -25,6 +25,7 @@ CASS_MAX_HEAP_SIZE=${CASS_MAX_HEAP_SIZE:-1G}
 CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-200M}
 GIT_BASE=${GIT_BASE:-git://github.com}
 CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-R1.06}
+NEUTRON_PLUGIN_BRANCH=${NEUTRON_PLUGIN_BRANCH:-CONTRAIL_BRANCH}
 
 unset LANG
 unset LANGUAGE
@@ -549,8 +550,7 @@ function install_contrail() {
                 fi
 
             else
-                git_clone $GIT_BASE/juniper/contrail-neutron-plugin openstack/neutron_plugin $CONTRAIL_BRANCH
-                (cd openstack/neutron_plugin; git checkout tags/v1.06)
+                git_clone $GIT_BASE/juniper/contrail-neutron-plugin openstack/neutron_plugin $NEUTRON_PLUGIN_BRANCH
                 sudo pip install -e $CONTRAIL_SRC/openstack/neutron_plugin/
 		# install contrail modules
                 echo "Installing contrail modules"
