@@ -8,6 +8,7 @@ set +o xtrace
 CONTRAIL_CONF_DIR=/etc/contrail
 
 function neutron_plugin_create_nova_conf() {
+    :
 }
 
 function neutron_plugin_configure_common() {
