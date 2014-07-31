@@ -228,6 +228,7 @@ function download_dependencies {
         apt_get install python-dev autoconf automake build-essential libtool
         apt_get install libevent-dev libxml2-dev libxslt-dev
         apt_get install uml-utilities
+        apt_get install libvirt-bin
         apt_get install python-software-properties
         apt_get install python-setuptools
         apt_get install python-novaclient 
@@ -249,6 +250,7 @@ function download_dependencies {
         sudo yum -y install libevent libevent-devel libxml2-devel libxslt-devel
 	sudo yum -y install openssl-devel
         sudo yum -y install tunctl
+        sudo yum -y install libvirt-bin
         sudo yum -y install python-setuptools
         sudo yum -y install python-lxml
         sudo yum -y install curl
