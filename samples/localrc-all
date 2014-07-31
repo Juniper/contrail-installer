@@ -29,6 +29,3 @@ NEUTRON_PLUGIN_BRANCH=aa40d25a62e4f908b099804b255d548de2a01a7f
 
 # proto for openstack bits. Use HTTPS if git is firewalled
 GIT_BASE=https://github.com
-
-# opencontrail nova plugin
-NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver

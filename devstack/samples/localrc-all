@@ -27,3 +27,6 @@ PHYSICAL_INTERFACE=eth0
 
 # proto for openstack bits. Use HTTPS if git is firewalled
 GIT_BASE=https://git.openstack.org
+
+# opencontrail nova plugin
+NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
