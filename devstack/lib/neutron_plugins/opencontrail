@@ -8,7 +8,6 @@ set +o xtrace
 CONTRAIL_CONF_DIR=/etc/contrail
 
 function neutron_plugin_create_nova_conf() {
-    NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
 }
 
 function neutron_plugin_configure_common() {
@@ -17,10 +16,24 @@ function neutron_plugin_configure_common() {
     Q_DB_NAME=neutron
     Q_PLUGIN_CLASS=neutron_plugin_contrail.plugins.opencontrail.contrailplugin.ContrailPlugin
 
-    local NEUTRON_CONF_PLUGIN_DIR=$NEUTRON_DIR/$Q_PLUGIN_CONF_PATH
-    mkdir -p $NEUTRON_CONF_PLUGIN_DIR
-    touch $NEUTRON_CONF_PLUGIN_DIR/$Q_PLUGIN_CONF_FILENAME
-    cp $CONTRAIL_CONF_DIR/$Q_PLUGIN_CONF_FILENAME $NEUTRON_CONF_PLUGIN_DIR/
+    local NEUTRON_PLUGIN_CONF=/$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
+    local MULTI_TENANCY=${MULTI_TENANCY:-False}
+    local APISERVER_PORT=${APISERVER_PORT:-8082}
+    local APISERVER_IP=${APISERVER_IP:-localhost}
+    local AUTH_URL=${AUTH_URL:-http://localhost:5000/v2.0}
+    local AUTH_HOST=${AUTH_URL:-localhost}
+    local ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
+    local ADMIN_USER=${ADMIN_USER:-admin}
+
+    iniset $NEUTRON_PLUGIN_CONF apiserver multi_tenancy $MULTI_TENANCY
+    iniset $NEUTRON_PLUGIN_CONF apiserver api_server_port $APISERVER_PORT
+    iniset $NEUTRON_PLUGIN_CONF keystone api_server_ip $APISERVER_IP
+
+    iniset $NEUTRON_PLUGIN_CONF keystone auth_url $AUTH_URL
+    iniset $NEUTRON_PLUGIN_CONF keystone auth_host $AUTH_HOST
+    iniset $NEUTRON_PLUGIN_CONF keystone admin_tenant_name $ADMIN_TENANT_NAME
+    iniset $NEUTRON_PLUGIN_CONF keystone admin_password $ADMIN_PASSWORD
+    iniset $NEUTRON_PLUGIN_CONF keystone admin_user $ADMIN_USER
 }
 
 function neutron_plugin_configure_service() {
