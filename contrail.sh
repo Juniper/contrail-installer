@@ -232,7 +232,6 @@ function download_dependencies {
         apt_get install python-software-properties
         apt_get install python-setuptools
         apt_get install python-novaclient 
-        apt_get install python-greenlet
         apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
@@ -266,7 +265,6 @@ function download_python_dependencies {
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
     pip_install --upgrade setuptools
-    pip_install -U greenlet
     pip_install gevent geventhttpclient==1.0a thrift
     pip_install netifaces fabric argparse
     pip_install bottle

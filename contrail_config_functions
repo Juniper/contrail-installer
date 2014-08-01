@@ -594,7 +594,7 @@ function replace_irond_basic_auth_users()
       sudo grep -q  ^"# Contrail" $file
       value=$?
       if [[ $value -eq 1 ]]; then
-          echo '\n# Contrail users' >> $file
+          echo '# Contrail users' >> $file
           sudo echo 'api-server:api-server' >> $file
           sudo echo 'schema-transformer:schema-transformer' >> $file
           sudo echo 'svc_monitor:svc_monitor' >> $file
