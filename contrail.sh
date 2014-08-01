@@ -24,7 +24,8 @@ BS_FL_OF_PORT=${BS_FL_OF_PORT:-6633}
 CASS_MAX_HEAP_SIZE=${CASS_MAX_HEAP_SIZE:-1G}
 CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-200M}
 GIT_BASE=${GIT_BASE:-git://github.com}
-CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-master}
+CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-R1.06}
+NEUTRON_PLUGIN_BRANCH=${NEUTRON_PLUGIN_BRANCH:-CONTRAIL_BRANCH}
 
 unset LANG
 unset LANGUAGE
@@ -551,7 +552,7 @@ function install_contrail() {
                 fi
 
             else
-                git_clone $GIT_BASE/juniper/contrail-neutron-plugin openstack/neutron_plugin $CONTRAIL_BRANCH
+                git_clone $GIT_BASE/juniper/contrail-neutron-plugin openstack/neutron_plugin $NEUTRON_PLUGIN_BRANCH
                 sudo pip install -e $CONTRAIL_SRC/openstack/neutron_plugin/
 		# install contrail modules
                 echo "Installing contrail modules"
@@ -816,7 +817,7 @@ function start_contrail() {
         else
             screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
         fi
-        sleep2
+        sleep 2
 
         #opserver_param  
         source /etc/contrail/opserver_param
