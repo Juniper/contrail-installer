@@ -817,7 +817,7 @@ function start_contrail() {
         else
             screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
         fi
-        sleep2
+        sleep 2
 
         #opserver_param  
         source /etc/contrail/opserver_param
