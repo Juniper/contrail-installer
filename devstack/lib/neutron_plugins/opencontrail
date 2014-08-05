@@ -15,7 +15,7 @@ function neutron_plugin_configure_common() {
     Q_PLUGIN_CONF_PATH=etc/neutron/plugins/opencontrail
     Q_PLUGIN_CONF_FILENAME=ContrailPlugin.ini
     Q_DB_NAME=neutron
-    Q_PLUGIN_CLASS=neutron_plugin_contrail.plugins.opencontrail.contrail_plugin_core.NeutronPluginContrailCoreV2
+    Q_PLUGIN_CLASS=${Q_PLUGIN_CLASS:-neutron_plugin_contrail.plugins.opencontrail.contrail_plugin_core.NeutronPluginContrailCoreV2}
 
     local NEUTRON_PLUGIN_CONF=/$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
     local MULTI_TENANCY=${MULTI_TENANCY:-False}
