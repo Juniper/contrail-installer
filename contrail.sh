@@ -26,6 +26,7 @@ CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-200M}
 GIT_BASE=${GIT_BASE:-git://github.com}
 CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-R1.06}
 NEUTRON_PLUGIN_BRANCH=${NEUTRON_PLUGIN_BRANCH:-CONTRAIL_BRANCH}
+Q_META_DATA_IP=${Q_META_DATA_IP:-127.0.0.1}
 
 unset LANG
 unset LANGUAGE
@@ -893,18 +894,21 @@ END
     chmod a+x $TOP_DIR/bin/vnsw.hlpr
     screen_it agent "sudo $TOP_DIR/bin/vnsw.hlpr"
 
-    if is_service_enabled q-meta; then
-	# set up a proxy route in contrail from 169.254.169.254:80 to
-	# my metadata server at port 8775
-	python /opt/stack/contrail/controller/src/config/utils/provision_linklocal.py \
-	    --linklocal_service_name metadata \
-	    --linklocal_service_ip 169.254.169.254 \
-	    --linklocal_service_port 80 \
-	    --ipfabric_service_ip $Q_META_DATA_IP \
-	    --ipfabric_service_port 8775 \
-	    --oper add
-    fi
-    
+    # set up a proxy route in contrail from 169.254.169.254:80 to
+    # my metadata server at port 8775
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
+        PROV_MS_PATH="$CONTRAIL_SRC/controller/src/config/utils"
+    else
+        PROV_MS_PATH="/usr/share/contrail-utils"
+     fi
+    python $PROV_MS_PATH/provision_linklocal.py \
+        --linklocal_service_name metadata \
+        --linklocal_service_ip 169.254.169.254 \
+        --linklocal_service_port 80 \
+        --ipfabric_service_ip $Q_META_DATA_IP \
+        --ipfabric_service_port 8775 \
+        --oper add
+
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
