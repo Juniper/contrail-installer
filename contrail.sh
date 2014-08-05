@@ -272,6 +272,7 @@ function download_python_dependencies {
     pip_install uuid psutil
     pip_install netaddr bitarray 
     pip_install --upgrade redis
+    pip_install amqp
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
