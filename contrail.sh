@@ -24,7 +24,7 @@ BS_FL_OF_PORT=${BS_FL_OF_PORT:-6633}
 CASS_MAX_HEAP_SIZE=${CASS_MAX_HEAP_SIZE:-1G}
 CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-200M}
 GIT_BASE=${GIT_BASE:-git://github.com}
-CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-R1.06}
+CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-master}
 NEUTRON_PLUGIN_BRANCH=${NEUTRON_PLUGIN_BRANCH:-CONTRAIL_BRANCH}
 Q_META_DATA_IP=${Q_META_DATA_IP:-127.0.0.1}
 
@@ -223,6 +223,7 @@ function download_node_for_npm {
 function download_dependencies {
     echo "Downloading dependencies"
     if is_ubuntu; then
+        sudo -E add-apt-repository -y cloud-archive:havana
         apt_get update
         apt_get install patch scons flex bison make vim unzip
         apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
@@ -239,6 +240,7 @@ function download_dependencies {
         apt_get install ant debhelper default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
         apt_get install linux-headers-$(uname -r)
+        apt_get install python-neutron
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
             apt_get install python-kombu
@@ -664,11 +666,11 @@ function insert_vrouter() {
         || echo "Error creating interface: $DEVICE"
 
     echo "Adding $DEVICE to vrouter"
-    sudo $VIF --add $DEVICE --mac $DEV_MAC --vrf 0 --xconnect $dev --mode x --type vhost \
+    sudo $VIF --add $DEVICE --mac $DEV_MAC --vrf 0 --xconnect $dev --type vhost \
 	|| echo "Error adding $DEVICE to vrouter"
 
     echo "Adding $dev to vrouter"
-    sudo $VIF --add $dev --mac $DEV_MAC --vrf 0 --mode x --type physical \
+    sudo $VIF --add $dev --mac $DEV_MAC --vrf 0 --type physical \
 	|| echo "Error adding $dev to vrouter"
 
     if is_ubuntu; then
@@ -889,7 +891,7 @@ END
         cat > $TOP_DIR/bin/vnsw.hlpr <<END
 #! /bin/bash
 PATH=$TOP_DIR/bin:$PATH
-LD_LIBRARY_PATH=/usr/lib /usr/bin/vnswad --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
+LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-vrouter-agent --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
 END
     fi
     chmod a+x $TOP_DIR/bin/vnsw.hlpr
