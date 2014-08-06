@@ -562,7 +562,7 @@ function install_contrail() {
                 apt_get install contrail-control contrail-analytics contrail-lib 
                 apt_get install python-contrail-vrouter-api contrail-vrouter-utils 
                 apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-vrouter-agent 
-                #apt_get install neutron-plugin-contrail 
+                apt_get install neutron-plugin-contrail 
                 apt_get install contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
                 apt_get install contrail-nova-driver contrail-webui-bundle
