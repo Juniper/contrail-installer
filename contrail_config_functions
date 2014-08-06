@@ -83,8 +83,8 @@ function replace_contrail_plugin_conf()
     check_replace_value $file KEYSTONE admin_user $CONTRAIL_ADMIN_USERNAME
     check_replace_value $file KEYSTONE admin_password $ADMIN_PASSWORD
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
-    check_replace_value $file KEYSTONE auth_url http://$CFGM_IP/v2.0
-    mv $file $temp_location
+    check_replace_value $file KEYSTONE auth_url http://$OPENSTACK_IP:5000/v2.0
+    cp $file $temp_location
 }
 
 function replace_contrail_schema_conf()
@@ -251,8 +251,8 @@ function replace_ContrailPlugin_conf()
     check_replace_value $file KEYSTONE admin_password $ADMIN_PASSWORD
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
-    check_replace_value $file KEYSTONE auth_host  $CFGM_IP
-    check_replace_value $file KEYSTONE auth_url  http://$CFGM_IP:5000/v2.0
+    check_replace_value $file KEYSTONE auth_host  $OPENSTACK_IP
+    check_replace_value $file KEYSTONE auth_url  http://$OPENSTACK_IP:5000/v2.0
     mkdir -p $temp_location
     cp $file $temp_location     
 }
@@ -486,7 +486,7 @@ function _rewrite_ifcfg_file()
         bond=true
     fi
     mac=$(get_Mac $dev)
-    ifcfg_file='/etc/sysconfig/network-scripts/ifcfg-$dev'
+    ifcfg_file="/etc/sysconfig/network-scripts/ifcfg-$dev"
      
     if [[ ! -f $ifcfg_file ]]; then
         ifcfg_file=$temp_dir_name'/ifcfg-'$dev
