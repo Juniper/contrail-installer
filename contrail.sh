@@ -223,7 +223,6 @@ function download_node_for_npm {
 function download_dependencies {
     echo "Downloading dependencies"
     if is_ubuntu; then
-        sudo -E add-apt-repository -y cloud-archive:havana
         apt_get update
         apt_get install patch scons flex bison make vim unzip
         apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
@@ -240,6 +239,8 @@ function download_dependencies {
         apt_get install ant debhelper default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
         apt_get install linux-headers-$(uname -r)
+        sudo -E add-apt-repository -y cloud-archive:havana
+        apt_get update
         apt_get install python-neutron
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
