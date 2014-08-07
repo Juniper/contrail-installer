@@ -503,8 +503,8 @@ function build_contrail() {
             exit
         fi
     else
-        sudo -E add-apt-repository -y ppa:opencontrail/ppa
         sudo -E add-apt-repository -y ppa:opencontrail/snapshots
+        sudo -E add-apt-repository -y ppa:opencontrail/ppa
         apt_get update
         change_stage "python-dependencies" "Build"
     fi  
