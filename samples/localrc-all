@@ -19,7 +19,7 @@ INSTALL_PROFILE=ALL
 PHYSICAL_INTERFACE=eth0
 
 # to get source code make it as False 
-CONTRAIL_DEFAULT_INSTALL=False
+CONTRAIL_DEFAULT_INSTALL=True
 
 # repo proto is https or (default) ssh. Leave commented for ssh
 # CONTRAIL_REPO_PROTO=https
