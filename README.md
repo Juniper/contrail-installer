@@ -34,11 +34,11 @@ INSTALL_PORFILE - Set this to ALL to for an all in one node.
 
 Contrail.sh is the main script that supports following options:
 
-    build   ... to build OpenContrail
-    Install ... to Install OpenContrail
-    Install ... to Configure & Provision 
-    start   ... to Start OpenContrail Modules
-    stop    ... to Stop OpenContrail Modules
+    build     ... to build OpenContrail
+    Install   ... to Install OpenContrail
+    configure ... to Configure & Provision 
+    start     ... to Start OpenContrail Modules
+    stop      ... to Stop OpenContrail Modules
 
 # Launcing OpenContrail
 
