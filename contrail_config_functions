@@ -566,6 +566,7 @@ function replace_contrail_vrouter_agent_conf()
     check_replace_value $file  VIRTUAL-HOST-INTERFACE physical_interface $PHYSICAL_INTERFACE
     check_replace_value $file  COLLECTOR port $collector_port
     check_replace_value $file  COLLECTOR server $collector_ip
+    check_replace_value $file  DISCOVERY server $CFGM_IP
 
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         check_replace_value $file  GATEWAY-0 interface $CONTRAIL_VGW_INTERFACE
