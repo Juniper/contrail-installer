@@ -555,8 +555,6 @@ function install_contrail() {
                 fi
 
             else
-                git_clone $GIT_BASE/juniper/contrail-neutron-plugin openstack/neutron_plugin $NEUTRON_PLUGIN_BRANCH
-                sudo pip install -e $CONTRAIL_SRC/openstack/neutron_plugin/
 		# install contrail modules
                 echo "Installing contrail modules"
                 apt_get install contrail-config python-contrail contrail-utils 
@@ -568,6 +566,9 @@ function install_contrail() {
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
                 apt_get install contrail-nova-driver contrail-webui-bundle
                 apt_get install ifmap-server python-ncclient
+
+                # contrail neutron plugin installs ini file as root
+                sudo chown -R `whoami`:`whoami` /etc/neutron
             fi
             # get cassandra
             download_cassandra
