@@ -780,7 +780,7 @@ function start_contrail() {
         fi
         sleep 2
     
-        screen_it disco "python $(pywhere discovery)/disc_server_zk.py --reset_config --conf_file /etc/contrail/discovery.conf"
+        screen_it disco "python $(pywhere discovery)/disc_server.py --reset_config --conf_file /etc/contrail/discovery.conf"
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
@@ -811,9 +811,9 @@ function start_contrail() {
         # collector/vizd
         source /etc/contrail/vizd_param
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it vizd "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+            screen_it vizd "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DISCOVERY.server ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
         else
-            screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+            screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DISCOVERY.server ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
         fi
         sleep 2
 
