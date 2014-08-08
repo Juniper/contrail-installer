@@ -30,3 +30,7 @@ GIT_BASE=https://git.openstack.org
 
 # opencontrail nova plugin
 NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
+
+# may need the following for older trunk snapshot
+# validate against /usr/lib/python2.7/dist-packages/neutron_plugin_contrail/plugins/opencontrail/
+Q_PLUGIN_CLASS=neutron_plugin_contrail.plugins.opencontrail.contrail_plugin_core.NeutronPluginContrailCoreV2
