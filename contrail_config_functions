@@ -178,7 +178,13 @@ function replace_svc_monitor_conf()
 function replace_discovery_conf()
 {
 
-    file="/etc/contrail/discovery.conf"
+    file="/etc/contrail/contrail-discovery.conf"
+
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}""$ip":9160 " 
+    done
    
     check_replace_value $file DEFAULTS listen_ip_addr $CFGM_IP
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
@@ -187,6 +193,7 @@ function replace_discovery_conf()
         check_replace_value $file DEFAULTS listen_port 5998
         check_replace_value $file DEFAULTS log_local 'True'
         check_replace_value $file DEFAULTS log_file '/var/log/contrail/discovery.log'
+        check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     fi
     # minimim time to allow client to cache service information (seconds)
     #check_replace_value $file DEFAULTS ttl_min 300

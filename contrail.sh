@@ -207,7 +207,7 @@ function download_node_for_npm {
     # install node which brings npm that's used in fetch_packages.py
     if ! which node > /dev/null 2>&1 || ! which npm > /dev/null 2>&1 ; then
         # download nodejs if building from source or centos
-        if "$CONTRAIL_DEFAULT_INSTALL" != "True" || ! is_ubuntu; then    
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]] || [[ ! is_ubuntu ]]; then    
             wget http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz -O node-v0.8.15.tar.gz
             tar -xf node-v0.8.15.tar.gz
             contrail_cwd=$(pwd)
@@ -286,6 +286,12 @@ function download_python_dependencies {
         fi
         pip_install pycassa stevedore xmltodict python-keystoneclient
         pip_install kazoo pyinotify
+    fi
+
+    # needed by cfgm_common/analytics_client.py. Binary mode likely
+    # pulls in package from launchpad opencontrail PPA
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
+        sudo pip install --upgrade six==1.5.2
     fi
 }
 
@@ -786,7 +792,7 @@ function start_contrail() {
         fi
         sleep 2
     
-        screen_it disco "python $(pywhere discovery)/disc_server.py --reset_config --conf_file /etc/contrail/discovery.conf"
+        screen_it disco "python $(pywhere discovery)/disc_server.py --reset_config --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
@@ -802,7 +808,7 @@ function start_contrail() {
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; $CONTRAIL_SRC/build/production/control-node/control-node --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         else
             screen_it control "export LD_LIBRARY_PATH=/usr/lib; /usr/bin/control-node --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
