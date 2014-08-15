@@ -526,7 +526,7 @@ function install_contrail() {
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if [[ $(read_stage) == "Build" ]] || [[ $(read_stage) == "install" ]]; then
             if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
-	        sudo scons --opt=production install
+                sudo scons --opt=production --root=/ install
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit
                 cd ${contrail_cwd}
@@ -804,7 +804,7 @@ function start_contrail() {
         fi
         sleep 2
         screen_it schema "python $(pywhere schema_transformer)/to_bgp.py --reset_config --conf_file /etc/contrail/contrail-schema.conf"
-        screen_it svc-mon "python $(pywhere svc_monitor)/svc_monitor.py --reset_config --conf_file /etc/contrail/svc-monitor.conf"
+        screen_it svc-mon "/usr/bin/contrail-svc-monitor --reset_config --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
