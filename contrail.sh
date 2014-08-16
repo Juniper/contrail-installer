@@ -290,7 +290,7 @@ function download_python_dependencies {
     # needed by cfgm_common/analytics_client.py. Binary mode likely
     # pulls in package from launchpad opencontrail PPA
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
-        sudo pip install --upgrade six==1.5.2
+        sudo pip install --upgrade six
     fi
 }
 
