@@ -268,7 +268,6 @@ function download_python_dependencies {
     # api server requirements
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
-    pip_install --upgrade setuptools
     pip_install gevent geventhttpclient==1.0a thrift
     pip_install netifaces fabric argparse
     pip_install bottle
