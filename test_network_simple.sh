@@ -50,7 +50,7 @@ fi
 
 
 # stock image form vms
-image=cirros-0.3.1-x86_64-uec # default stock image
+image=cirros-0.3.2-x86_64-uec # default stock image
 
 yes | ssh-keygen -N "" -f sshkey
 nova keypair-add --pub-key sshkey.pub sshkey

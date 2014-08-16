@@ -1,14 +1,14 @@
 contrail-installer
 ==================
 
-Install scripts for OpenContrail
+contrail-installer is a set of scripts and utilities to quickly 
+build, install, configure and deploy OpenContrail.
 
 # Versions
 
 The contrail-installer master branch generally points to trunk versions 
 of OpenContrail components.  For older, stable versions, use appropriate
-release name in the contrail-installer repo.  For example, to use release
-1.06:
+release name. For example, to use release 1.06:
 
     cd contrail-installer
     git checkout R1.06
@@ -23,7 +23,7 @@ Best to start with a sample localrc.
 
 CONTRAIL_DEFAULT_INSTALL - Set this to True for installation from OpenContrail PPA. 
 When set to False, top of trunk OpenContrail bits will be downloaded and compiled. 
-Default is to use OpenContrail packages (released or snapshots).
+Default is to use OpenContrail packages (released version or snapshots).
 
 PHYSICAL_INTERFACE - This is external interface Vrouter should bind to. It should have
 a valid IP address configured.
@@ -54,10 +54,9 @@ Run the following NOT AS ROOT:
 
 # OpenContrail+Devstack
 
-R1.06 and trunk work with havana release of openstack.
+R1.06 and trunk work with stable/havana and trunk of devstack.
 
     git clone git@github.com:openstack-dev/devstack
-    git checkout stable/havana
     
 A glue file is needed in the interim till it is upstreamed to devstack
 
@@ -70,5 +69,6 @@ Use a sample localrc:
 Run stack.sh
 
     cd devstack
-    git checkout stable/havana
+    git checkout stable/havana (if working with release 1.06 of OpenContrail)
+    (edit localrc as needed - physical interface, host ip ...)
     ./stack.sh
