@@ -44,9 +44,9 @@ function replace_api_server_conf()
     check_replace_value $file KEYSTONE admin_password $ADMIN_PASSWORD
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
     check_replace_value $file KEYSTONE auth_port 5000 
+    check_replace_value $file KEYSTONE auth_protocol http
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
         check_replace_value $file KEYSTONE memcache_servers '127.0.0.1:11211' 
-        check_replace_value $file KEYSTONE auth_protocol http
     fi
 }
 
