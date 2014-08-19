@@ -786,7 +786,7 @@ function start_contrail() {
         fi
         sleep 2
     
-        screen_it disco "python $(pywhere discovery)/disc_server.py --reset_config --conf_file /etc/contrail/discovery.conf"
+        screen_it disco "python $(pywhere discovery)/disc_server.py --reset_config --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
@@ -798,7 +798,7 @@ function start_contrail() {
         fi
         sleep 2
         screen_it schema "python $(pywhere schema_transformer)/to_bgp.py --reset_config --conf_file /etc/contrail/contrail-schema.conf"
-        screen_it svc-mon "python $(pywhere svc_monitor)/svc_monitor.py --reset_config --conf_file /etc/contrail/svc-monitor.conf"
+        screen_it svc-mon "/usr/bin/contrail-svc-monitor --reset_config --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
