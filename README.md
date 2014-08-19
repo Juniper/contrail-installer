@@ -8,10 +8,15 @@ build, install, configure and deploy OpenContrail.
 
 The contrail-installer master branch generally points to trunk versions 
 of OpenContrail components.  For older, stable versions, use appropriate
-release name. For example, to use release 1.06:
+release name. For example:
 
     cd contrail-installer
-    git checkout R1.06
+    git checkout R1.06 (release 1.06)
+
+    or
+
+    cd contrail-installer
+    git checkout stable/mainline (stable mainline version)
 
 # OpenContrail localrc
 
@@ -54,7 +59,7 @@ Run the following NOT AS ROOT:
 
 # OpenContrail+Devstack
 
-R1.06 and trunk work with stable/havana and trunk of devstack.
+R1.06 and trunk currently work with stable/havana and trunk of devstack.
 
     git clone git@github.com:openstack-dev/devstack
     
@@ -69,6 +74,6 @@ Use a sample localrc:
 Run stack.sh
 
     cd devstack
-    git checkout stable/havana (if working with release 1.06 of OpenContrail)
+    git checkout stable/havana
     (edit localrc as needed - physical interface, host ip ...)
     ./stack.sh
