@@ -232,9 +232,6 @@ function download_dependencies {
         apt_get install python-software-properties
         apt_get install python-setuptools
         apt_get install python-novaclient
-        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
-            apt_get install python-eventlet
-        fi
         apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
@@ -270,15 +267,14 @@ function download_python_dependencies {
     # api server requirements
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
+    pip_install -U setuptools
     pip_install gevent geventhttpclient==1.0a thrift
     pip_install netifaces fabric argparse
     pip_install bottle
     pip_install uuid psutil
     pip_install netaddr bitarray 
     pip_install --upgrade redis
-    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-        pip_install amqp
-    fi
+    pip_install amqp
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
@@ -294,7 +290,7 @@ function download_python_dependencies {
     # needed by cfgm_common/analytics_client.py. Binary mode likely
     # pulls in package from launchpad opencontrail PPA
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
-        sudo pip install --upgrade six
+         pip_install --upgrade six
     fi
 }
 
@@ -464,9 +460,7 @@ function build_contrail() {
         download_python_dependencies
         change_stage "Dependencies" "python-dependencies"
     fi
-    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
-        apt_get remove python-setuptools
-    fi
+
     sudo mkdir -p $CONTRAIL_SRC
     sudo chown $C_UID:$C_GUID $CONTRAIL_SRC
 
