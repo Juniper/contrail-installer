@@ -38,7 +38,6 @@ VERBOSE=$(trueorfalse True $VERBOSE)
 CONTRAIL_REPO_PROTO=${CONTRAIL_REPO_PROTO:-ssh}
 CONTRAIL_SRC=${CONTRAIL_SRC:-/opt/stack/contrail}
 LOG_DIR=${LOG_DIR:-$TOP_DIR/log/screens}
-ADMIN_PASSWORD=${ADMIN_PASSWORD:-contrail123}
 CONTRAIL_ADMIN_USERNAME=${CONTRAIL_ADMIN_USERNAME:-admin}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-contrail123}
 CONTRAIL_ADMIN_TENANT=${CONTRAIL_ADMIN_TENANT:-admin}
@@ -232,7 +231,7 @@ function download_dependencies {
         apt_get install libvirt-bin
         apt_get install python-software-properties
         apt_get install python-setuptools
-        apt_get install python-novaclient 
+        apt_get install python-novaclient
         apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
@@ -268,6 +267,7 @@ function download_python_dependencies {
     # api server requirements
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
+    pip_install -U setuptools
     pip_install gevent geventhttpclient==1.0a thrift
     pip_install netifaces fabric argparse
     pip_install bottle
@@ -290,7 +290,7 @@ function download_python_dependencies {
     # needed by cfgm_common/analytics_client.py. Binary mode likely
     # pulls in package from launchpad opencontrail PPA
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
-        sudo pip install --upgrade six
+         pip_install --upgrade six
     fi
 }
 
