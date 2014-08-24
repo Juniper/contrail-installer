@@ -287,11 +287,7 @@ function download_python_dependencies {
         pip_install kazoo pyinotify
     fi
 
-    # needed by cfgm_common/analytics_client.py. Binary mode likely
-    # pulls in package from launchpad opencontrail PPA
-    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
-         pip_install --upgrade six
-    fi
+    pip_install --upgrade six
 }
 
 function repo_initialize {
