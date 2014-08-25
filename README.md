@@ -77,3 +77,18 @@ Run stack.sh
     git checkout stable/havana
     (edit localrc as needed - physical interface, host ip ...)
     ./stack.sh
+
+# Restarting OpenContrail+Devstack
+
+If you need to restart OpenContrail or Devstack for some reason, currently they
+need to be synchonized. So
+
+    cd ~/devstack
+    ./unstack.sh
+    cd ~/contrail-installer
+    ./contrail.sh stop
+
+    cd ~/contrail-installer
+    ./contrail.sh start
+    cd ~/devstack
+    ./stack.sh
