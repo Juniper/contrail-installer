@@ -13,11 +13,6 @@ release name. For example:
     cd contrail-installer
     git checkout R1.06 (release 1.06)
 
-    or
-
-    cd contrail-installer
-    git checkout stable/mainline (stable mainline version)
-
 # OpenContrail localrc
 
 OpenContrail uses ``localrc`` to contain all local configuration and customizations. 
