@@ -287,6 +287,9 @@ function download_python_dependencies {
         fi
         pip_install pycassa stevedore xmltodict python-keystoneclient
         pip_install kazoo pyinotify
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
+            pip_install stevedore==1.0.0.0a1
+        fi 
     fi
 
     pip_install --upgrade six
