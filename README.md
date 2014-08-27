@@ -60,7 +60,7 @@ R1.06 and trunk currently work with stable/havana and trunk of devstack.
     
 A glue file is needed in the interim till it is upstreamed to devstack
 
-    cp ~/contrail-installer/devstack/lib/neutron_plugin/opencontrail lib/neutron_plugin/
+    cp ~/contrail-installer/devstack/lib/neutron_plugins/opencontrail lib/neutron_plugins/
 
 Use a sample localrc:
 
