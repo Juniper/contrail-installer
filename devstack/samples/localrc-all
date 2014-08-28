@@ -5,6 +5,7 @@ LOG=True
 DEBUG=True
 LOGFILE=$STACK_DIR/log/stack.log
 LOGDAYS=1
+SCREEN_LOGDIR=$LOG_DIR
 
 disable_service n-net
 enable_service q-svc
