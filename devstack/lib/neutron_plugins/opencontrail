@@ -25,17 +25,10 @@ function neutron_plugin_configure_common() {
     local MULTI_TENANCY=${MULTI_TENANCY:-False}
     local APISERVER_PORT=${APISERVER_PORT:-8082}
     local APISERVER_IP=${APISERVER_IP:-localhost}
-    local AUTH_URL=$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_AUTH_PORT/v2.0
 
     iniset $NEUTRON_PLUGIN_CONF apiserver multi_tenancy $MULTI_TENANCY
     iniset $NEUTRON_PLUGIN_CONF apiserver api_server_port $APISERVER_PORT
     iniset $NEUTRON_PLUGIN_CONF apiserver api_server_ip $APISERVER_IP
-
-    iniset $NEUTRON_PLUGIN_CONF keystone auth_url $AUTH_URL
-    iniset $NEUTRON_PLUGIN_CONF keystone auth_host $KEYSTONE_SERVICE_HOST
-    iniset $NEUTRON_PLUGIN_CONF keystone admin_tenant_name $SERVICE_TENANT_NAME
-    iniset $NEUTRON_PLUGIN_CONF keystone admin_password $SERVICE_PASSWORD
-    iniset $NEUTRON_PLUGIN_CONF keystone admin_user $Q_ADMIN_USERNAME
 }
 
 function neutron_plugin_configure_service() {
