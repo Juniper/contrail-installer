@@ -583,7 +583,7 @@ function replace_contrail_vrouter_agent_conf()
 }
 
 function replace_irond_basic_auth_users()
-{     
+{    
       if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
           file="/etc/ifmap-server/basicauthusers.properties"
           file1="/etc/ifmap-server/publisher.properties"
@@ -597,7 +597,7 @@ function replace_irond_basic_auth_users()
           sudo chown `whoami`:`whoami` $file
           sudo chown `whoami`:`whoami` $file1
           sudo chmod 664 $file
-          sudo chmod 664 $file1 
+          sudo chmod 664 $file1
       fi
       tmp_file="/etc/contrail/basicauthusers.properties"
       sudo grep -q  ^"# Contrail" $file
@@ -612,7 +612,13 @@ function replace_irond_basic_auth_users()
           sudo echo "$CONTROL_IP.dns:$CONTROL_IP.dns" >> $tmp_file
           sudo echo "$CONTROL_IP=$CFGM_IP--0000000001-1" >> $file1
           sudo mv $tmp_file $file
-      fi  
+      else
+          ip_list=$(egrep '[0-9].[0-9]' $file)
+          ip=$(echo $ip_list |awk '{print $1}'|awk 'BEGIN{FS=OFS=":"}{print $1}')
+          sudo sed -i "s/$ip/$CONTROL_IP/g" $file
+     
+      fi 
+     
 }
 
 function write_default_pmac()
