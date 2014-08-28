@@ -2,7 +2,9 @@ contrail-installer
 ==================
 
 contrail-installer is a set of scripts and utilities to quickly 
-build, install, configure and deploy OpenContrail.
+build, install, configure and deploy OpenContrail. It can be used
+with pre-build packages (e.g. Launchpad PPA) or from sources. It
+is typically used in conjunction with devstack.
 
 # Versions
 
