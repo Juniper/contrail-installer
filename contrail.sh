@@ -548,12 +548,16 @@ function install_contrail() {
                 # ncclient
                 download_ncclient
  
-                if [ ! -d $CONTRAIL_SRC/contrail-web-core/node_modules ]; then
-                    contrail_cwd=$(pwd)
-                    cd $CONTRAIL_SRC/contrail-web-core
-                    make fetch-pkgs-prod
-                    make dev-env REPO=webController
-                fi
+                contrail_cwd=$(pwd)
+    		cd $CONTRAIL_SRC
+    		python contrail-webui-third-party/fetch_packages.py
+    		sed -ie "s/config\.discoveryService\.enable.*$/config\.discoveryService\.enable = false;/" contrail-web-core/config/config.global.js
+    		sed -ie "s/config\.featurePkg\.webController\.path.*$/config\.featurePkg\.webController\.path = '\/opt\/stack\/contrail\/contrail-web-controller';/" contrail-web-core/config/config.global.js
+    		sed -ie "s/config\.core_path.*$/config\.core_path = '\/opt\/stack\/contrail\/contrail-web-core';/" contrail-web-controller/webroot/common/js/controller.config.global.js
+    		cd contrail-web-core
+    		make fetch-pkgs-prod
+    		make dev-env REPO=webController
+    		cd ${contrail_cwd}
 
             else
 		# install contrail modules
