@@ -9,11 +9,17 @@ is typically used in conjunction with devstack.
 # Versions
 
 The contrail-installer master branch generally points to trunk versions 
-of OpenContrail components.  For older, stable versions, use appropriate
-release name. For example:
+of OpenContrail components, whether sources or snapshots.  For older, 
+stable versions, use appropriate release name. For example:
 
     cd contrail-installer
     git checkout R1.06 (release 1.06)
+
+Currently contrail-installer supports the following:
+
+    Release 1.06 packages (use git checkout R1.06)
+    mainline snapshots (contrail-installer master branch)
+    mainline sources (contrail-installer master branch)
 
 # OpenContrail localrc
 
@@ -47,7 +53,7 @@ Contrail.sh is the main script that supports following options:
 Run the following NOT AS ROOT:
 
     cd contrail-installer
-    git checkout R1.06 (if using release 1.06 version)
+    # git checkout R1.06 (if using released 1.06 packages)
     cp samples/localrc-all localrc (edit localrc as needed)
     ./contrail.sh build
     ./contrail.sh install
@@ -56,7 +62,8 @@ Run the following NOT AS ROOT:
 
 # OpenContrail+Devstack
 
-R1.06 and trunk currently work with stable/havana and trunk of devstack.
+R1.06 and trunk of contrail-installer currently work with stable/havana, 
+stable/icehouse and trunk of devstack.
 
     git clone git@github.com:openstack-dev/devstack
     
