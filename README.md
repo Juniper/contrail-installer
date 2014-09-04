@@ -38,6 +38,12 @@ a valid IP address configured.
 
 INSTALL_PORFILE - Set this to ALL to for an all in one node. 
 
+USE_SCREEN - Set this to True to launch contrail modules in a screen session called
+"contrail". Connect to screen session for any troubleshooring of contrail modules.
+
+LOGFILE - Specifiy logfile for contrail.sh runs. By default this is log/contrail.log
+in contrail-installer directory
+
 # OpenContrail script
 
 Contrail.sh is the main script that supports following options:
