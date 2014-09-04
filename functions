@@ -1116,7 +1116,7 @@ function screen_it {
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
     USE_SCREEN=$(trueorfalse False $USE_SCREEN)
 
-#    if is_service_enabled $1; then
+    if is_service_enabled $1; then
         # Append the service to the screen rc file
         screen_rc "$1" "$2"
 
@@ -1154,9 +1154,9 @@ function screen_it {
             sleep 5 
             ps aux | grep vnswad | head -1 | awk '{print $2}' >$SERVICE_DIR/$SCREEN_NAME/$1_1.pid 
         fi
-#      else
-#        echo "SERVICE IS NOT ENABLED"
-#    fi
+    else
+        echo "SERVICE IS NOT ENABLED"
+    fi
 }
 
 

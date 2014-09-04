@@ -9,6 +9,8 @@ if [[ $EUID -eq 0 ]]; then
     exit 1
 fi
 
+ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,redis-u,redis-q,vizd,opserver,qed,agent,redis-w,ui-jobs,ui-webs
+
 # Save trace setting
 MY_XTRACE=$(set +o | grep xtrace)
 set -o xtrace
