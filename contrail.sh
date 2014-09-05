@@ -499,6 +499,7 @@ function build_contrail() {
 
         if [[ $(read_stage) == "repo-sync" ]]; then
             python third_party/fetch_packages.py
+            python third_party/fetch_packages.py --file $contrail_cwd/installer.xml 
             change_stage "repo-sync" "fetch-packages"
         fi
 
