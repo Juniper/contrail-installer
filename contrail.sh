@@ -227,7 +227,7 @@ function download_dependencies {
         apt_get update
         apt_get install patch scons flex bison make vim unzip
         apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
-        apt_get install python-dev autoconf automake build-essential libtool
+        apt_get install python-dev autoconf automake build-essential libtool protobuf-compiler libprotobuf-dev
         apt_get install libevent-dev libxml2-dev libxslt-dev
         apt_get install uml-utilities
         apt_get install libvirt-bin
