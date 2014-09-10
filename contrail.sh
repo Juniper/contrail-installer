@@ -9,6 +9,11 @@ if [[ $EUID -eq 0 ]]; then
     exit 1
 fi
 
+# Determine what system we are running on. This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
 ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,redis-u,redis-q,vizd,opserver,qed,agent,redis-w,ui-jobs,ui-webs
 
 # Save trace setting
@@ -243,6 +248,14 @@ function download_dependencies {
         sudo -E add-apt-repository -y cloud-archive:havana
         apt_get update
         apt_get install python-neutron
+        if [[ ! ${DISTRO} =~ (trusty) ]]; then
+            apt_get install libboost-dev libboost-chrono-dev libboost-date-time-dev
+            apt_get install libboost-filesystem-dev libboost-program-options-dev
+            apt_get install libboost-python-dev libboost-regex-dev libboost-system-dev
+            apt_get install libboost-thread-dev libcurl4-openssl-dev google-mock
+            apt_get install libgoogle-perftools-dev liblog4cplus-dev libtbb-dev
+            apt_get install libhttp-parser-dev libxml2-dev libicu-dev
+        fi
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
             apt_get install python-kombu
