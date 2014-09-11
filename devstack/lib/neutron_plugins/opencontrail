@@ -17,7 +17,8 @@ function neutron_plugin_configure_common() {
     Q_DB_NAME=neutron
     Q_PLUGIN_CLASS=neutron_plugin_contrail.plugins.opencontrail.contrailplugin.ContrailPlugin
 
-    local NEUTRON_PLUGIN_CONF=/$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
+    local NEUTRON_PLUGIN_CONF=$NEUTRON_DIR/$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
+    mkdir -p $NEUTRON_DIR/$Q_PLUGIN_CONF_PATH
     local MULTI_TENANCY=${MULTI_TENANCY:-False}
     local APISERVER_PORT=${APISERVER_PORT:-8082}
     local APISERVER_IP=${APISERVER_IP:-localhost}
