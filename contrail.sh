@@ -259,6 +259,7 @@ function download_dependencies {
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
             apt_get install python-kombu
+            apt_get install python-sphinx
         fi
     else
         sudo yum -y install patch scons flex bison make vim
