@@ -843,16 +843,24 @@ function is_service_enabled() {
     services=$@
     for service in ${services}; do
         [[ ,${ENABLED_SERVICES}, =~ ,${service}, ]] && return 0
-        [[ ${service} == n-cell-* && ${ENABLED_SERVICES} =~ "n-cell" ]] && return 0
-        [[ ${service} == "nova" && ${ENABLED_SERVICES} =~ "n-" ]] && return 0
-        [[ ${service} == "cinder" && ${ENABLED_SERVICES} =~ "c-" ]] && return 0
-        [[ ${service} == "ceilometer" && ${ENABLED_SERVICES} =~ "ceilometer-" ]] && return 0
-        [[ ${service} == "glance" && ${ENABLED_SERVICES} =~ "g-" ]] && return 0
-        [[ ${service} == "ironic" && ${ENABLED_SERVICES} =~ "ir-" ]] && return 0
-        [[ ${service} == "neutron" && ${ENABLED_SERVICES} =~ "q-" ]] && return 0
-        [[ ${service} == "trove" && ${ENABLED_SERVICES} =~ "tr-" ]] && return 0
-        [[ ${service} == "swift" && ${ENABLED_SERVICES} =~ "s-" ]] && return 0
-        [[ ${service} == s-* && ${ENABLED_SERVICES} =~ "swift" ]] && return 0
+        [[ ${service} == "redis" && ${ENABLED_SERVICES} =~ "redis" ]] && return 0
+        [[ ${service} == "cass" && ${ENABLED_SERVICES} =~ "cass" ]] && return 0
+        [[ ${service} == "zk" && ${ENABLED_SERVICES} =~ "zk" ]] && return 0
+        [[ ${service} == "ifmap" && ${ENABLED_SERVICES} =~ "ifmap" ]] && return 0
+        [[ ${service} == "disco" && ${ENABLED_SERVICES} =~ "disco" ]] && return 0
+        [[ ${service} == "apiSrv" && ${ENABLED_SERVICES} =~ "apiSrv" ]] && return 0
+        [[ ${service} == "schema" && ${ENABLED_SERVICES} =~ "schema" ]] && return 0
+        [[ ${service} == "svc-mon" && ${ENABLED_SERVICES} =~ "svc-mon" ]] && return 0
+        [[ ${service} == "agent" && ${ENABLED_SERVICES} =~ "agent" ]] && return 0
+        [[ ${service} == "control" && ${ENABLED_SERVICES} =~ "control" ]] && return 0
+        [[ ${service} == "redis-u" && ${ENABLED_SERVICES} =~ "redis-u" ]] && return 0
+        [[ ${service} == "redis-q" && ${ENABLED_SERVICES} =~ "redis-q" ]] && return 0
+        [[ ${service} == "vizd" && ${ENABLED_SERVICES} =~ "vizd" ]] && return 0
+        [[ ${service} == "opserver" && ${ENABLED_SERVICES} =~ "opserver" ]] && return 0
+        [[ ${service} == "qed" && ${ENABLED_SERVICES} =~ "qed" ]] && return 0
+        [[ ${service} == "redis-w" && ${ENABLED_SERVICES} =~ "redis-w" ]] && return 0
+        [[ ${service} == "ui-jobs" && ${ENABLED_SERVICES} =~ "ui-jobs" ]] && return 0
+        [[ ${service} == "ui-webs" && ${ENABLED_SERVICES} =~ "ui-webs" ]] && return 0   
     done
     return 1
 }
@@ -1170,7 +1178,7 @@ function screen_stop() {
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
     USE_SCREEN=$(trueorfalse False $USE_SCREEN)
 
-#    if is_service_enabled $1; then
+    if is_service_enabled $1; then
         # Kill via pid if we have one available
         if [[ -r $SERVICE_DIR/$SCREEN_NAME/$1.pid ]]; then
             sudo pkill -TERM -P $(cat $SERVICE_DIR/$SCREEN_NAME/$1.pid)
@@ -1189,7 +1197,7 @@ function screen_stop() {
             # Clean up the screen window
             screen -S $SCREEN_NAME -p $1 -X kill
         fi
-#    fi
+    fi
 }
 
 

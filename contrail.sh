@@ -193,12 +193,24 @@ function download_redis {
     echo "Downloading dependencies"
     if is_ubuntu; then
         if ! which redis-server > /dev/null 2>&1 ; then
-            sudo apt-get install libjemalloc1
-            wget http://us.archive.ubuntu.com/ubuntu/pool/universe/r/redis/redis-server_2.6.13-1_amd64.deb
-            sudo dpkg -i redis-server_2.6.13-1_amd64.deb
-            rm -rf redis-server_2.6.13-1_amd64.deb
-            # service will be started later
-            sudo service redis-server stop
+            if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+                sudo apt-get install libjemalloc1
+                contrail_cwd=$(pwd)
+                cd $CONTRAIL_SRC/third_party
+                sudo dpkg -i redis-server_2.6.13-1_amd64.deb
+                rm -rf redis-server_2.6.13-1_amd64.deb
+                # service will be started later
+                sudo service redis-server stop
+                cd ${contrail_cwd}
+            else
+                sudo apt-get install libjemalloc1
+                wget http://us.archive.ubuntu.com/ubuntu/pool/universe/r/redis/redis-server_2.6.13-1_amd64.deb
+                sudo dpkg -i redis-server_2.6.13-1_amd64.deb
+                rm -rf redis-server_2.6.13-1_amd64.deb
+                # service will be started later
+                sudo service redis-server stop
+            fi
+
         fi
     else
         if ! which redis-server > /dev/null 2>&1 ; then
@@ -213,15 +225,16 @@ function download_node_for_npm {
     # install node which brings npm that's used in fetch_packages.py
     if ! which node > /dev/null 2>&1 || ! which npm > /dev/null 2>&1 ; then
         # download nodejs if building from source or centos
-        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]] || [[ ! is_ubuntu ]]; then    
-            wget http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz -O node-v0.8.15.tar.gz
-            tar -xf node-v0.8.15.tar.gz
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]] || [[ ! is_ubuntu ]]; then
+            contrail_cwd_root=$(pwd)
+            cd $CONTRAIL_SRC/third_party    
             contrail_cwd=$(pwd)
             cd node-v0.8.15
             ./configure; make; sudo make install
             cd ${contrail_cwd}
             rm -rf node-v0.8.15.tar.gz
             rm -rf node-v0.8.15
+            cd ${contrail_cwd_root}
         fi
     fi
 }
@@ -301,6 +314,9 @@ function download_python_dependencies {
         fi
         pip_install pycassa stevedore xmltodict python-keystoneclient
         pip_install kazoo pyinotify
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
+            pip_install stevedore==1.0.0.0a1
+        fi 
     fi
 
     pip_install --upgrade six
@@ -409,7 +425,13 @@ function download_cassandra {
 
 function download_zookeeper {
     echo "Downloading zookeeper"
-    if [ ! -d $CONTRAIL_SRC/third_party/zookeeper-3.4.6 ]; then
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+        contrail_cwd=$(pwd)
+        cd $CONTRAIL_SRC/third_party
+        cd zookeeper-3.4.6
+        cp conf/zoo_sample.cfg conf/zoo.cfg
+        cd ${contrail_cwd}
+    elif [ ! -d $CONTRAIL_SRC/third_party/zookeeper-3.4.6 ]; then
         contrail_cwd=$(pwd)
         cd $CONTRAIL_SRC/third_party
         wget http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-3.4.6.tar.gz
@@ -426,7 +448,6 @@ function download_ncclient {
     if ! python -c 'import ncclient' >/dev/null 2>&1; then
         contrail_cwd=$(pwd)
         cd $CONTRAIL_SRC/third_party
-        wget https://code.grnet.gr/attachments/download/1172/ncclient-v0.3.2.tar.gz
         pip_install ncclient-v0.3.2.tar.gz
         cd ${contrail_cwd}
     fi
@@ -458,10 +479,6 @@ function build_contrail() {
     if [[ $(read_stage) == "started" ]]; then
         # dependencies
         download_dependencies 
-        if [ "$INSTALL_PROFILE" = "ALL" ]; then
-            download_redis
-            download_node_for_npm 
-        fi
         change_stage "started" "Dependencies"
     fi
    
@@ -496,6 +513,7 @@ function build_contrail() {
 
         if [[ $(read_stage) == "repo-sync" ]]; then
             python third_party/fetch_packages.py
+            python third_party/fetch_packages.py --file $contrail_cwd/installer.xml 
             change_stage "repo-sync" "fetch-packages"
         fi
 
@@ -524,7 +542,12 @@ function build_contrail() {
         sudo -E add-apt-repository -y ppa:opencontrail/ppa
         apt_get update
         change_stage "python-dependencies" "Build"
-    fi  
+    fi 
+    if [ "$INSTALL_PROFILE" = "ALL" ]; then
+            download_redis
+            download_node_for_npm
+    fi
+ 
 }
 
 function install_contrail() {

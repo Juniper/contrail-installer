@@ -1,0 +1,41 @@
+<packages>
+  <!--
+    Tags:
+        name    : Specify name of the package.
+        url     : URL to download the package.
+        format  : Format of the downloaded file.
+                  If format is set as 'file', then after downloading the 
+                  file, same file gets renamed (if rename tag is specfied) and
+                  copied to currect directory, else based on the format, the
+                  zipped file gets extracted and gets copied in current directory
+        md5     : md5 checksum to compare, against the md5 checksum of the 
+                  downloaded file
+        rename  : Rename the directory/downloaded file to this.
+        patches : Specify the patch files which will be applied on the files once 
+                  download and copy to currect directory is complete.
+  -->
+  <package>
+    <name>redis-server</name>
+    <url>http://us.archive.ubuntu.com/ubuntu/pool/universe/r/redis/redis-server_2.6.13-1_amd64.deb</url>
+    <format>file</format>
+    <md5>b860b9cb5558ca6bac3e70547766db59</md5>
+  </package>
+  <package>
+    <name>zookeeper</name>
+    <url>http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-3.4.6.tar.gz</url>
+    <format>tgz</format>
+    <md5>971c379ba65714fd25dc5fe8f14e9ad1</md5>
+  </package>
+  <package>
+    <name>ncclient</name>
+    <url>https://code.grnet.gr/attachments/download/1172/ncclient-v0.3.2.tar.gz</url>
+    <format>file</format>
+    <md5>5e2912270ed3b5c534b97702f41f56ed</md5>
+  </package>
+  <package>
+    <name>NodeJS</name>
+    <url>http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz</url>
+    <format>tgz</format>
+    <md5>6cb31180b07475db103e694f65e8bb9b</md5>
+  </package>
+</packages>
