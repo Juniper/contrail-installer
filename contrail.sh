@@ -9,11 +9,6 @@ if [[ $EUID -eq 0 ]]; then
     exit 1
 fi
 
-# Determine what system we are running on. This provides ``os_VENDOR``,
-# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
-# and ``DISTRO``
-GetDistro
-
 ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,redis-u,redis-q,vizd,opserver,qed,agent,redis-w,ui-jobs,ui-webs
 
 # Save trace setting
@@ -23,6 +18,11 @@ TOP_DIR=`pwd`
 CONTRAIL_USER=$(whoami)
 source functions
 source localrc
+
+# Determine what system we are running on. This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
 
 BS_FL_CONTROLLERS_PORT=${BS_FL_CONTROLLERS_PORT:-localhost:80}
 BS_FL_OF_PORT=${BS_FL_OF_PORT:-6633}
