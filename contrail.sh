@@ -261,7 +261,7 @@ function download_dependencies {
         sudo -E add-apt-repository -y cloud-archive:havana
         apt_get update
         apt_get install python-neutron
-        if [[ ! ${DISTRO} =~ (trusty) ]]; then
+        if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install libboost-dev libboost-chrono-dev libboost-date-time-dev
             apt_get install libboost-filesystem-dev libboost-program-options-dev
             apt_get install libboost-python-dev libboost-regex-dev libboost-system-dev
