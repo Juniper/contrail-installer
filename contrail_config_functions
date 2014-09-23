@@ -240,7 +240,6 @@ function replace_vnc_api_lib_conf()
 function replace_ContrailPlugin_conf()
 {
     file="/etc/contrail/ContrailPlugin.ini"
-    temp_location="/opt/stack/neutron/etc/neutron/plugins/opencontrail/"
     check_replace_value $file APISERVER api_server_ip $CFGM_IP
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
         check_replace_value $file APISERVER api_server_port 8082
@@ -253,8 +252,6 @@ function replace_ContrailPlugin_conf()
     check_replace_value $file KEYSTONE admin_tenant_name $CONTRAIL_ADMIN_TENANT
     check_replace_value $file KEYSTONE auth_host  $OPENSTACK_IP
     check_replace_value $file KEYSTONE auth_url  http://$OPENSTACK_IP:5000/v2.0
-    mkdir -p $temp_location
-    cp $file $temp_location     
 }
 
 function replace_contrail_control_conf()
