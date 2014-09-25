@@ -1112,6 +1112,19 @@ function stop_contrail() {
     return
 }
 
+function all_contrail() {
+    if [[ $(read_stage) != "Build" ]] && [[ $(read_stage) != "install" ]]; then
+        build_contrail
+        install_contrail
+    elif [[ $(read_stage) == "Build" ]]; then 
+        install_contrail
+    fi
+    if [[ $(read_stage) == "install" ]]; then
+        configure_contrail
+       start_contrail
+    fi
+}
+
 # Kill background processes on exit
 trap clean EXIT
 clean() {
@@ -1141,13 +1154,18 @@ OPTION=$1
 ARGS_COUNT=$#
 setup_logging
 setup_root_access
-if [ $ARGS_COUNT -eq 1 ] && [ "$OPTION" == "install" ] || [ "$OPTION" == "start" ] || [ "$OPTION" == "configure" ] || [ "$OPTION" == "clean" ] || [ "$OPTION" == "stop" ] || [ "$OPTION" == "build" ]; 
+if [ $ARGS_COUNT -eq 0 ];
+then 
+    all_contrail
+elif [ $ARGS_COUNT -eq 1 ] && [ "$OPTION" == "install" ] || [ "$OPTION" == "start" ] || [ "$OPTION" == "configure" ] || [ "$OPTION" == "clean" ] || [ "$OPTION" == "stop" ] || [ "$OPTION" == "build" ]; 
 then
     ${OPTION}_contrail
 else
-    echo "Usage :: contrail.sh [option]"
-    echo "ex: contrail.sh install"
+    echo "Usage ::contrail.sh [option]"
+    echo "contrail.sh(Without any option executes 1.build,2.install,3.configure,4.start phases)"
+    echo "ex:contrail.sh install"
     echo "[options]:"
+    echo "build"
     echo "install"
     echo "start"
     echo "stop"
