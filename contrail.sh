@@ -28,8 +28,8 @@ BS_FL_CONTROLLERS_PORT=${BS_FL_CONTROLLERS_PORT:-localhost:80}
 BS_FL_OF_PORT=${BS_FL_OF_PORT:-6633}
 
 # Cassandra JAVA Memory Options
-CASS_MAX_HEAP_SIZE=${CASS_MAX_HEAP_SIZE:-1G}
-CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-200M}
+CASS_MAX_HEAP_SIZE=${CASS_MAX_HEAP_SIZE:-200M}
+CASS_HEAP_NEWSIZE=${CASS_HEAP_NEWSIZE:-50M}
 GIT_BASE=${GIT_BASE:-git://github.com}
 CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-master}
 NEUTRON_PLUGIN_BRANCH=${NEUTRON_PLUGIN_BRANCH:-CONTRAIL_BRANCH}
@@ -696,6 +696,9 @@ function insert_vrouter() {
     # don't die in small memory environments
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
         sudo insmod $CONTRAIL_SRC/vrouter/$kmod vr_flow_entries=4096 vr_oflow_entries=512
+        if [[ $? -eq 1 ]] ; then 
+            exit 1
+        fi
         echo "Creating vhost interface: $DEVICE."
         VIF=$CONTRAIL_SRC/build/production/vrouter/utils/vif
     else    
