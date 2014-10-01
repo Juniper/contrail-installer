@@ -10,14 +10,11 @@ is typically used in conjunction with devstack.
 
 The contrail-installer master branch generally points to trunk versions 
 of OpenContrail components, whether sources or snapshots.  For older, 
-stable versions, use appropriate release name. For example:
-
-    cd contrail-installer
-    git checkout R1.06 (release 1.06)
+stable versions, use appropriate release name. 
 
 Currently contrail-installer supports the following:
 
-    Release 1.06 packages (use git checkout R1.06)
+    Release 1.06 packages (contrail-installer R1.06 branch)
     mainline snapshots (contrail-installer master branch)
     mainline sources (contrail-installer master branch)
 
@@ -29,8 +26,8 @@ Best to start with a sample localrc.
     cd contrail-installer
     cp samples/localrc-all localrc
 
-CONTRAIL_DEFAULT_INSTALL - Set this to True for installation from OpenContrail PPA. 
-When set to False, top of trunk OpenContrail bits will be downloaded and compiled. 
+CONTRAIL_DEFAULT_INSTALL - Set this to True for installation from OpenContrail binary
+packages. When set to False, trunk OpenContrail bits will be downloaded and compiled. 
 Default is to use OpenContrail packages (released version or snapshots).
 
 PHYSICAL_INTERFACE - This is external interface Vrouter should bind to. It should have
@@ -59,7 +56,6 @@ Contrail.sh is the main script that supports following options:
 Run the following NOT AS ROOT:
 
     cd contrail-installer
-    # git checkout R1.06 (if using released 1.06 packages)
     cp samples/localrc-all localrc (edit localrc as needed)
     ./contrail.sh build
     ./contrail.sh install
