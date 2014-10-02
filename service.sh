@@ -71,34 +71,23 @@ function _start_service()
                     fi
                    ;;
 
-           redis-u) echo "starting redis-u"
-                    screen_it redis-u "sudo redis-server /etc/contrail/redis-uve.conf"
-                   ;;
-
-           redis-q) echo "starting redis-q"
-                    screen_it redis-q "sudo redis-server /etc/contrail/redis-query.conf"
-                   ;;
-
-           vizd) echo "starting vizd"
-                 source /etc/contrail/vizd_param
+           collector) echo "starting collector"
                  if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-                    screen_it vizd "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+                    screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd"
                  else
-                    screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+                    screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
                  fi
                    ;;
  
-          opserver) echo "starting opserver"
-                    source /etc/contrail/opserver_param
-                    screen_it opserver "python  $(pywhere opserver)/opserver.py --collectors ${COLLECTORS} --host_ip ${HOST_IP} ${LOG_FILE} ${LOG_LOCAL}"
+          analytics-api) echo "starting analytics-api"
+                    screen_it analytics-api "python  $(pywhere opserver)/opserver.py"
                    ;;
 
-          qed) echo "starting qed"
-               source /etc/contrail/qed_param
+          query-engine) echo "starting query-engine"
                if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
-                   screen_it qed "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+                   screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
                else
-                    screen_it qed "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+                    screen_it query-engine "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine"
                fi
                    ;;
 

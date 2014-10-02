@@ -164,7 +164,7 @@ ttl_short=1
 ######################################################################
 """)
 
-vizd_param_template = string.Template("""
+contrail_collector_conf_template = string.Template("""
 CASSANDRA_SERVER_LIST=$__contrail_cassandra_server_list__
 REDIS_SERVER=$__contrail_redis_server__
 REDIS_SERVER_PORT=$__contrail_redis_server_port__
@@ -177,7 +177,7 @@ LOG_LOCAL=$__contrail_log_local__
 LOG_LEVEL=$__contrail_log_level__
 """)
 
-qe_param_template = string.Template("""
+contrail_query_conf_template = string.Template("""
 CASSANDRA_SERVER_LIST=$__contrail_cassandra_server_list__
 REDIS_SERVER=$__contrail_redis_server__
 REDIS_SERVER_PORT=$__contrail_redis_server_port__
@@ -190,7 +190,7 @@ LOG_LOCAL=$__contrail_log_local__
 LOG_LEVEL=$__contrail_log_level__
 """)
 
-opserver_param_template = string.Template("""
+contrail_analytics_api_template = string.Template("""
 REDIS_SERVER=$__contrail_redis_server__
 REDIS_SERVER_PORT=$__contrail_redis_server_port__
 REDIS_QUERY_PORT=$__contrail_redis_query_port__
