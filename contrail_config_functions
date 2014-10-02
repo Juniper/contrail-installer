@@ -724,38 +724,20 @@ function fixup_config_files()
     echo 'COMPUTE='$COMPUTE_IP >> "/etc/contrail/ctrl-details"
     echo 'CONTROLLER_MGMT='$CFGM_IP >> "/etc/contrail/ctrl-details"
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
-        REDIS_UVE="/etc/contrail/redis-uve.conf"
-        REDIS_QUERY="/etc/contrail/redis-query.conf"
         REDIS_WEBUI="/etc/contrail/redis-webui.conf"
         if [[ -f /etc/redis/redis.conf ]]; then
             REDIS_CONF="/etc/redis/redis.conf"
         else
             REDIS_CONF="/etc/redis.conf"
         fi
-        sudo cp $REDIS_CONF $REDIS_UVE
-        sudo cp $REDIS_CONF $REDIS_QUERY 
+        sudo sed 's/bind 127.0.0.1.*/#bind 127.0.0.1/g' $REDIS_CONF > redis.conf.new
+        sudo mv redis.conf.new $REDIS_CONF
         sudo cp $REDIS_CONF $REDIS_WEBUI 
-        replace_in_file  $REDIS_UVE  'pidfile /var/run/redis/redis.pid' 'pidfile /var/run/redis/redis-uve.pid'  
-        replace_in_file  $REDIS_UVE  'port 6379' 'port 6381'  
-        replace_in_file  $REDIS_UVE  'bind 127.0.0.1' '#bind 127.0.0.1'  
-        replace_in_file  $REDIS_UVE  'logfile /var/log/redis/redis-server.log' 'logfile /var/log/redis/redis-uve.log'  
-        replace_in_file  $REDIS_UVE  'dbfilename dump.rdb' 'dbfilename dump-uve.rdb'  
-        
-        replace_in_file  $REDIS_QUERY  'pidfile /var/run/redis/redis.pid' 'pidfile /var/run/redis/redis-query.pid'  
-        replace_in_file  $REDIS_QUERY  'port 6379' 'port 6380'  
-        replace_in_file  $REDIS_QUERY  'bind 127.0.0.1' '#bind 127.0.0.1'  
-        replace_in_file  $REDIS_QUERY  'logfile /var/log/redis/redis-server.log' 'logfile /var/log/redis/redis-query.log'  
-        replace_in_file  $REDIS_QUERY  'dbfilename dump.rdb' 'dbfilename dump-query.rdb'    
-        
         replace_in_file  $REDIS_WEBUI  'pidfile /var/run/redis/redis.pid'  'pidfile /var/run/redis/redis-webui.pid'  
         replace_in_file  $REDIS_WEBUI  'port 6379' 'port 6383'  
-        replace_in_file  $REDIS_WEBUI  'bind 127.0.0.1' '#bind 127.0.0.1'  
         replace_in_file  $REDIS_WEBUI  'logfile /var/log/redis/redis-server.log' 'logfile /var/log/redis/redis-webui.log'  
         replace_in_file  $REDIS_WEBUI  'dbfilename dump.rdb' 'dbfilename dump-webui.rdb'    
         
-        replace_vizd_param
-        replace_qed_param
-        replace_opserver
     fi
     if [[ $NON_MGMT_IP ]]; then
        if [[ $NON_MGMT_IP != $COMPUTE_IP ]]; then
@@ -818,90 +800,4 @@ function fixup_config_files()
         :
     fi
     sudo chkconfig network on 
-}
-
-function replace_vizd_param()
-{
-    file="/etc/contrail/vizd_param"
-    cassandra_server=""
-    for ip in ${CASSANDRA_IP_LIST[@]};
-    do
-        cassandra_server=${cassandra_server}""$ip":9160 " 
-    done
-    if [[ -f $file ]]; then
-        sudo rm $file
-    fi
-    check_replace_value $file "" CASSANDRA_SERVER_LIST $cassandra_server
-    check_replace_value $file "" DISCOVERY  $DISCOVERY_IP
-    check_replace_value $file "" HOST_IP  $COLLECTOR_IP
-    check_replace_value $file "" LOG_FILE  '--log-file=/var/log/contrail/collector.log'
-    check_replace_value $file "" LOG_LOCAL  '--log-local'
-    #check_replace_value $file "" REDIS_SERVER $COLLECTOR_IP
-    #check_replace_value $file "" REDIS_SERVER_PORT  6380
-    #check_replace_value $file "" LOG_LEVEL  $__contrail_log_level__
-    #check_replace_value $file "" LISTEN_PORT  $__contrail_listen_port__
-    #check_replace_value $file "" HTTP_SERVER_PORT  $__contrail_http_server_port__
-    remove_spaces $file DEFAULTS
-
-}
-
-function replace_qed_param()
-{
-    file="/etc/contrail/qed_param"
-    cassandra_server=""
-    for ip in ${CASSANDRA_IP_LIST[@]};
-    do
-        cassandra_server=${cassandra_server}""$ip":9160 " 
-    done
-    collector_ip=""
-    for ip in ${COLLECTOR_IP_LIST[@]};
-    do
-        collector_ip=${collector_ip}" "$ip":8086" 
-    done
-    if [[ -f $file ]]; then
-        sudo rm $file
-    fi
-    check_replace_value $file "" CASSANDRA_SERVER_LIST  $cassandra_server
-    check_replace_value $file "" REDIS_SERVER  $COLLECTOR_IP
-    check_replace_value $file "" REDIS_SERVER_PORT  6380
-    check_replace_value $file "" DISCOVERY  $DISCOVERY_IP
-    check_replace_value $file "" COLLECTORS  $collector_ip
-    check_replace_value $file "" LOG_FILE  '--log-file=/var/log/contrail/qe.log'
-    check_replace_value $file "" LOG_LOCAL  '--log-local'
-    #check_replace_value $file "" LOG_LEVEL  $__contrail_log_level__
-    #check_replace_value $file "" LISTEN_PORT  $__contrail_listen_port__
-    #check_replace_value $file "" HTTP_SERVER_PORT  $__contrail_http_server_port__
-    remove_spaces $file DEFAULTS
-
-}
-
-function replace_opserver()
-{
-    file="/etc/contrail/opserver_param"
-    cassandra_server=""
-    for ip in ${CASSANDRA_IP_LIST[@]};
-    do
-        cassandra_server=${cassandra_server}""$ip":9160 " 
-    done
-    if [[ -f $file ]]; then
-        sudo rm $file
-    fi
-    collector_ip=""
-    for ip in ${COLLECTOR_IP_LIST[@]};
-    do
-        collector_ip=${collector_ip}" "$ip":8086" 
-    done
-    check_replace_value $file "" HOST_IP $COLLECTOR_IP
-    check_replace_value $file "" DISCOVERY $DISCOVERY_IP
-    check_replace_value $file "" LOG_LOCAL '--log_local'
-    check_replace_value $file "" LOG_FILE '--log_file=/var/log/contrail/opserver.log'
-    check_replace_value $file "" COLLECTORS $collector_ip
-    #check_replace_value $file "" REDIS_SERVER $COLLECTOR_IP
-    #check_replace_value $file "" REDIS_SERVER_PORT 6380
-    #check_replace_value $file "" REDIS_QUERY_PORT $__contrail_redis_query_port__
-    #check_replace_value $file "" HTTP_SERVER_PORT $__contrail_http_server_port__
-    #check_replace_value $file "" REST_API_PORT $__contrail_rest_api_port__
-    #check_replace_value $file "" LOG_LEVEL $__contrail_log_level__
-    remove_spaces $file DEFAULTS
-
 }

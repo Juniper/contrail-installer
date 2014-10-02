@@ -51,9 +51,9 @@ Files that are modified in configure phase are
     /etc/contrail/ifcfg-vhost0
     /etc/libvirt/qemu.conf
     /etc/contrail/ctrl-details
-    /etc/contrail/vizd_param
-    /etc/contrail/qed_param
-    /etc/contrail/opserver_param
+    /etc/contrail/contrail-collector.conf
+    /etc/contrail/contrail-query-engine.conf
+    /etc/contrail/contrail-analytics-api.conf
 
 6. Start the contrail services using the command
 

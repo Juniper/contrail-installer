@@ -9,7 +9,7 @@ if [[ $EUID -eq 0 ]]; then
     exit 1
 fi
 
-ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,redis-u,redis-q,vizd,opserver,qed,agent,redis-w,ui-jobs,ui-webs
+ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
 
 # Save trace setting
 MY_XTRACE=$(set +o | grep xtrace)
@@ -853,34 +853,24 @@ function start_contrail() {
         else
             screen_it control "export LD_LIBRARY_PATH=/usr/lib; /usr/bin/control-node --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
-        # collector services
-        # redis-uve
-        screen_it redis-u "sudo redis-server /etc/contrail/redis-uve.conf"
-        sleep 2
-        # redis-query
-        screen_it redis-q "sudo redis-server /etc/contrail/redis-query.conf"
-        sleep 2
 
         # collector/vizd
-        source /etc/contrail/vizd_param
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it vizd "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DISCOVERY.server ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd"
         else
-            screen_it vizd "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --DEFAULT.hostip ${HOST_IP} --DISCOVERY.server ${HOST_IP} --DEFAULT.log_file /var/log/contrail/collector.log"
+            screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
         fi
         sleep 2
 
         #opserver_param  
-        source /etc/contrail/opserver_param
-        screen_it opserver "python  $(pywhere opserver)/opserver.py --collectors ${COLLECTORS} --host_ip ${HOST_IP} ${LOG_FILE} ${LOG_LOCAL}"
+        screen_it analytics-api "python  $(pywhere opserver)/opserver.py"
         sleep 2
 
         #qed_param
-        source /etc/contrail/qed_param
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
-            screen_it qed "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+            screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
         else
-            screen_it qed "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine --DEFAULT.collectors ${COLLECTORS} --DEFAULT.cassandra_server_list ${CASSANDRA_SERVER_LIST} --REDIS.server ${REDIS_SERVER} --REDIS.port ${REDIS_SERVER_PORT} --DEFAULT.log_file /var/log/contrail/qe.log --DEFAULT.log_local"
+            screen_it query-engine "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine"
         fi
         sleep 2
 
@@ -1078,11 +1068,9 @@ function stop_contrail() {
         screen_stop schema
         screen_stop svc-mon
         screen_stop control
-        screen_stop redis-u
-        screen_stop redis-q
-        screen_stop vizd
-        screen_stop opserver
-        screen_stop qed
+        screen_stop collector
+        screen_stop analytics-api 
+        screen_stop query-engine 
         screen_stop redis-w
         screen_stop ui-jobs
         screen_stop ui-webs
