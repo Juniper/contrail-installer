@@ -14,7 +14,6 @@ stable versions, use appropriate release name.
 
 Currently contrail-installer supports the following:
 
-    Release 1.06 packages (contrail-installer R1.06 branch)
     mainline snapshots (contrail-installer master branch)
     mainline sources (contrail-installer master branch)
 
@@ -64,7 +63,7 @@ Run the following NOT AS ROOT:
 
 # OpenContrail+Devstack
 
-R1.06 and trunk of contrail-installer currently work with stable/havana, 
+Trunk of contrail-installer currently work with stable/havana, 
 stable/icehouse and trunk of devstack.
 
     git clone git@github.com:openstack-dev/devstack
