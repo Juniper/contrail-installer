@@ -93,7 +93,7 @@ function check_start_status()
 {   
     if [[ -d $CONTRAIL_DIR/status/contrail ]] ; then
         pid_count=`ls $CONTRAIL_DIR/status/contrail/*.pid|wc -l`
-        if [[ $pid_count -le 18 ]]; then
+        if [[ $pid_count -le 16 ]]; then
             echo 1
         else
             echo 0
