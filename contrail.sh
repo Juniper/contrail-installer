@@ -608,7 +608,7 @@ function install_contrail() {
                 apt_get install neutron-plugin-contrail 
                 apt_get install contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
-                apt_get install contrail-nova-driver contrail-webui-bundle
+                apt_get install contrail-nova-driver contrail-web-core contrail-web-controller
                 apt_get install ifmap-server python-ncclient
 
                 # contrail neutron plugin installs ini file as root
@@ -953,12 +953,11 @@ END
 
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
+
+        # for default install, jobserver and webserver are started by upstart
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
             screen_it ui-jobs "cd /opt/stack/contrail/contrail-web-core; sudo node jobServerStart.js"
             screen_it ui-webs "cd /opt/stack/contrail/contrail-web-core; sudo node webServerStart.js"
-        else
-            screen_it ui-jobs "cd /var/lib/contrail-webui-bundle; sudo node jobServerStart.js"
-            screen_it ui-webs "cd /var/lib/contrail-webui-bundle; sudo node webServerStart.js"
         fi
     fi
 
