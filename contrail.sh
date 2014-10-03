@@ -954,7 +954,6 @@ END
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
 
-        # for default install, jobserver and webserver are started by upstart
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
             screen_it ui-jobs "cd /opt/stack/contrail/contrail-web-core; sudo node jobServerStart.js"
             screen_it ui-webs "cd /opt/stack/contrail/contrail-web-core; sudo node webServerStart.js"
