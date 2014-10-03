@@ -714,13 +714,13 @@ function insert_vrouter() {
     sudo $VIF --create $DEVICE --mac $DEV_MAC \
         || echo "Error creating interface: $DEVICE"
 
+    echo "Adding $dev to vrouter"
+    sudo $VIF --add $dev --mac $DEV_MAC --vrf 0 --vhost-phys --type physical \
+	|| echo "Error adding $dev to vrouter"
+
     echo "Adding $DEVICE to vrouter"
     sudo $VIF --add $DEVICE --mac $DEV_MAC --vrf 0 --xconnect $dev --type vhost \
 	|| echo "Error adding $DEVICE to vrouter"
-
-    echo "Adding $dev to vrouter"
-    sudo $VIF --add $dev --mac $DEV_MAC --vrf 0 --type physical \
-	|| echo "Error adding $dev to vrouter"
 
     if is_ubuntu; then
 
