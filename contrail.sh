@@ -958,6 +958,9 @@ END
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
             screen_it ui-jobs "cd /opt/stack/contrail/contrail-web-core; sudo node jobServerStart.js"
             screen_it ui-webs "cd /opt/stack/contrail/contrail-web-core; sudo node webServerStart.js"
+        else
+            service contrail-webui-webserver restart
+            service contrail-webui-jobserver restart
         fi
     fi
 
