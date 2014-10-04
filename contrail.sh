@@ -706,6 +706,9 @@ function insert_vrouter() {
         vrouter_pkg_version=${vrouter_pkg_version#* (*}
         vrouter_pkg_version=${vrouter_pkg_version%*)*}        
         sudo insmod /var/lib/dkms/vrouter/$vrouter_pkg_version/build/$kmod vr_flow_entries=4096 vr_oflow_entries=512
+        if [[ $? -eq 1 ]] ; then 
+            exit 1
+        fi
         echo "Creating vhost interface: $DEVICE."
         VIF=/usr/bin/vif
     fi 
