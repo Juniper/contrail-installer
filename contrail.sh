@@ -537,16 +537,22 @@ function build_contrail() {
             echo "Selected profile is neither ALL nor COMPUTE"
             exit
         fi
-    else
-        sudo -E add-apt-repository -y ppa:opencontrail/snapshots
-        sudo -E add-apt-repository -y ppa:opencontrail/ppa
+    else	
+        if [["$LAUNCHPAD_BRANCH"="PPA"]]; then
+	    sudo -E add-apt-repository -y ppa:opencontrail/ppa
+        else
+            sudo -E add-apt-repository -y ppa:opencontrail/snapshots
+            sudo -E add-apt-repository -y ppa:opencontrail/ppa
+        fi
         apt_get update
         change_stage "python-dependencies" "Build"
     fi 
+	
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
             download_redis
             download_node_for_npm
     fi
+
  
 }
 
