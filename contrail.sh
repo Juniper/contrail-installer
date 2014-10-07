@@ -961,8 +961,13 @@ END
             screen_it ui-jobs "cd /opt/stack/contrail/contrail-web-core; sudo node jobServerStart.js"
             screen_it ui-webs "cd /opt/stack/contrail/contrail-web-core; sudo node webServerStart.js"
         else
-            service contrail-webui-webserver restart
-            service contrail-webui-jobserver restart
+            sudo service contrail-webui-webserver start
+            sudo service contrail-webui-jobserver start
+            echo "Waiting for webui to start..."
+            if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= curl -s http://${SERVICE_HOST}:8080; do sleep 1; done"; then
+                echo "webui did not start"
+                exit 1
+            fi
         fi
     fi
 
