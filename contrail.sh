@@ -538,7 +538,7 @@ function build_contrail() {
             exit
         fi
     else	
-        if [["$LAUNCHPAD_BRANCH"="PPA"]]; then
+        if [[ "$LAUNCHPAD_BRANCH" = "PPA" ]]; then
 	    sudo -E add-apt-repository -y ppa:opencontrail/ppa
         else
             sudo -E add-apt-repository -y ppa:opencontrail/snapshots
