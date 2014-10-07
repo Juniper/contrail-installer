@@ -289,14 +289,14 @@ function contrail_service_running_report()
             _status=$(check_array_value failures[@] $service_name)   
             if [[ "$_status" = "found" ]] ; then
                 echo "$line" >> $report_error_file
-                echo "$service_name    :     ERROR " >> $report_file  
-                echo "$service_name    :     ERROR " >> $report_error_file  
+                printf '%-20s : ERROR\n' $service_name >> $report_file
+                printf '%-20s : ERROR\n' $service_name >> $report_error_file
                 echo "$line" >> $report_error_file
                 echo "ERROR : `tail -n 50 $CONTRAIL_DIR/log/screens/screen-$service_name.log`"  >> $report_error_file
                 echo "$line" >> $report_error_file
                 
             else
-                echo "$service_name    :     ACTIVE " >> $report_file
+                printf '%-20s : ACTIVE\n' $service_name >> $report_file
             fi
         done
         cat $report_error_file >> $report_file

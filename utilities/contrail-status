@@ -1,0 +1,14 @@
+#! /bin/bash
+
+
+if [ -z "$CONTRAIL_DIR" ]; then
+    echo "CONTRAIL_DIR must be set to location of contrail-installer"
+    exit 1
+fi
+export CLONE_DIR=$CONTRAIL_DIR
+
+loc=$(dirname $0)
+source $loc/sanity.sh
+mkdir -p $CLONE_DIR/sanity_status
+contrail_service_running_report
+cat $CLONE_DIR/sanity_status/Opencontrail_services_status
