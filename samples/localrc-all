@@ -21,8 +21,8 @@ PHYSICAL_INTERFACE=eth0
 # to get source code make it as False 
 CONTRAIL_DEFAULT_INSTALL=True
 
-#to get the ppa packages
-LAUNCHPAD_BRANCH=PPA
+# to get the ppa packages uncomment
+# LAUNCHPAD_BRANCH=PPA
 
 # repo proto is https or (default) ssh. Leave commented for ssh
 # CONTRAIL_REPO_PROTO=https
