@@ -15,7 +15,7 @@ ENABLE_CI=${ENABLE_CI:-False}
 DEVSTACK_CLONE_URL=${DEVSTACK_CLONE_URL:-"https://github.com/openstack-dev/devstack.git"}
 DEVSTACK_CLONE_BRANCH=${DEVSTACK_CLONE_BRANCH:-"stable/havana"}
 RECLONE=${RECLONE:-False}
-      
+run_sanity=${run_sanity:-False}      
 NETWORK_NAME=${NETWORK_NAME:-net}
 SUBNET_NAME=${SUBNET_NAME:-subnet} 
 SUBNET_CIDR=${SUBNET_CIDR:-11.0.0.0/24}
@@ -92,8 +92,9 @@ function value_check()
 function check_start_status()
 {   
     if [[ -d $CONTRAIL_DIR/status/contrail ]] ; then
+        enabled_services_count=${#ENABLED_SERVICES}
         pid_count=`ls $CONTRAIL_DIR/status/contrail/*.pid|wc -l`
-        if [[ $pid_count -le 16 ]]; then
+        if [[ $pid_count -le $enabled_services_count ]]; then
             echo 1
         else
             echo 0

@@ -408,7 +408,8 @@ function download_cassandra {
             apt_get install --force-yes cassandra
 
             # fix cassandra's stack size issues
-            test_install_cassandra_patch
+            
+            # test_install_cassandra_patch
 
             # don't start cassandra at boot.  I'll screen_it later
             sudo service cassandra stop
