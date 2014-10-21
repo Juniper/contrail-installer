@@ -10,7 +10,6 @@
 
 
 CLONE_DIR=${CLONE_DIR:-`pwd`}
-run_sanity=${run_sanity:-"True"}
 WITH_CONTRAIL_CLONE=${WITH_CONTRAIL_CLONE:-True}
 NETWORK_NAME=${NETWORK_NAME:-net}
 SUBNET_NAME=${SUBNET_NAME:-subnet}
@@ -23,26 +22,6 @@ VM_PASSWORD=${VM_PASSWORD:-cubswin:)}
 #CLONE_DIR=`pwd`
 _CONTRAIL_NEUTRON_SERVICES=("apiSrv" "schema" "svc-mon") 
 #source $DEVSTACK_DIR/openrc $TENANT_NAME $TENANT_NAME
-
-
-function set_environment()
-{
-    if [[ "$WITH_CONTRAIL_CLONE" = "False" ]]; then
-        CONTRAIL_CLONE_DIR=`pwd`
-        CONTRAIL_DIR=$CONTRAIL_CLONE_DIR/../../contrail-installer
-        DEVSTACK_CLONE_DIR=$CONTRAIL_DIR/..
-        DEVSTACK_DIR=$DEVSTACK_CLONE_DIR/devstack
-    else
-        CONTRAIL_CLONE_DIR=$CLONE_DIR
-        CONTRAIL_DIR=$CLONE_DIR/contrail-installer
-        DEVSTACK_CLONE_DIR=$CLONE_DIR
-        DEVSTACK_DIR=$DEVSTACK_CLONE_DIR/devstack
-    fi
-}
-
-if [[ "$run_sanity" = "True" ]] ; then
-    set_environment
-fi
 
 echo "$CONTRAIL_DIR"
 if [[ -f $DEVSTACK_DIR/openrc ]] ; then
@@ -464,7 +443,3 @@ expect -c "
        echo "TESTCASE	PING FROM $source_ip TO $destination_ip    :       FAILED" >> $report_file
    fi
 }
-
-if [[ "$run_sanity" = "True" ]]; then
-    start_sanity_script
-fi
