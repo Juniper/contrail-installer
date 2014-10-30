@@ -8,9 +8,11 @@ if [[ $EUID -eq 0 ]]; then
     echo "Cut it out."
     exit 1
 fi
-
-ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
-
+if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+    ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
+else
+    ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
+fi
 # Save trace setting
 MY_XTRACE=$(set +o | grep xtrace)
 set -o xtrace
@@ -397,7 +399,7 @@ function download_cassandra {
             yes | apt_get install oracle-java7-installer
 
             # See http://wiki.apache.org/cassandra/DebianPackaging
-            echo "deb http://www.apache.org/dist/cassandra/debian 12x main" | \
+            echo "deb http://www.apache.org/dist/cassandra/debian 20x main" | \
             sudo tee /etc/apt/sources.list.d/cassandra.list
             gpg --keyserver pgp.mit.edu --recv-keys F758CE318D77295D
             gpg --export --armor F758CE318D77295D | sudo apt-key add -
@@ -579,7 +581,7 @@ function install_contrail() {
                 # install VIF driver
                 pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
                 # install Neutron OpenContrail plugin
-                sudo pip install -e $CONTRAIL_SRC/openstack/neutron_plugin/
+                pip_install $CONTRAIL_SRC/openstack/neutron_plugin/
   
                 # install neutron patch after VNC api is built and installed
                 # test_install_neutron_patch
