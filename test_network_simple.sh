@@ -9,8 +9,6 @@
 #
 
 
-set -ex
-
 die() {
     echo "ERROR: " "$@" >&2
     exit 1
@@ -52,11 +50,8 @@ fi
 # stock image form vms
 image=cirros-0.3.2-x86_64-uec # default stock image
 
-yes | ssh-keygen -N "" -f sshkey
-nova keypair-add --pub-key sshkey.pub sshkey
-
 flavor=m1.tiny
-vmargs="--image $image --flavor $flavor --key-name sshkey"
+vmargs="--image $image --flavor $flavor"
 
 # vm1: net1
 nova boot $vmargs --nic net-id=$net1_id vm1
@@ -69,5 +64,3 @@ sleep 2
 
 # show where the vms ended up
 nova list --fields name,status,Networks,OS-EXT-SRV-ATTR:host
-
-set +ex

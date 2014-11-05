@@ -14,8 +14,9 @@ stable versions, use appropriate release name.
 
 Currently contrail-installer supports the following:
 
-    mainline snapshots (contrail-installer master branch)
-    mainline sources (contrail-installer master branch)
+    mainline sources 
+    OpenContrail packages - snapshots 
+    OpenContrail packages - release 1.2 (currently)
 
 # OpenContrail localrc
 
@@ -27,10 +28,14 @@ Best to start with a sample localrc.
 
 CONTRAIL_DEFAULT_INSTALL - Set this to True for installation from OpenContrail binary
 packages. When set to False, trunk OpenContrail bits will be downloaded and compiled. 
-Default is to use OpenContrail packages (released version or snapshots).
+Default is to use OpenContrail binary packages (released version or snapshots).
+
+LAUNCHPAD_BRANCH=PPA - Applicable only when CONTRAIL_DEFAULT_INSTALL is set to True.
+It specifies to use released binary packages for installation. Default is to use 
+latest snapshots as this knob is commented out by default in sample localrc.
 
 PHYSICAL_INTERFACE - This is external interface Vrouter should bind to. It should have
-a valid IP address configured.
+a valid IP address configured. For example eth0
 
 INSTALL_PORFILE - Set this to ALL to for an all in one node. 
 
@@ -97,3 +102,7 @@ need to be synchonized. So
     ./contrail.sh start
     cd ~/devstack
     ./stack.sh
+
+# Verify installation
+1) screen -x contrail and run through various tabs to see various contrail modules are running
+2) Run utilities/contrail-status to see if all services are running
