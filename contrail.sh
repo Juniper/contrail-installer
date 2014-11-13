@@ -14,8 +14,6 @@ else
     ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
 fi
 # Save trace setting
-MY_XTRACE=$(set +o | grep xtrace)
-set -o xtrace
 TOP_DIR=`pwd`
 CONTRAIL_USER=$(whoami)
 source functions
@@ -43,10 +41,10 @@ LC_ALL=C
 export LC_ALL
 
 # Set up logging level
-VERBOSE=$(trueorfalse True $VERBOSE)
 CONTRAIL_REPO_PROTO=${CONTRAIL_REPO_PROTO:-ssh}
 CONTRAIL_SRC=${CONTRAIL_SRC:-/opt/stack/contrail}
 LOG_DIR=${LOG_DIR:-$TOP_DIR/log/screens}
+LOG_LEVEL=${LOG_LEVEL:-3}
 CONTRAIL_ADMIN_USERNAME=${CONTRAIL_ADMIN_USERNAME:-admin}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-contrail123}
 CONTRAIL_ADMIN_TENANT=${CONTRAIL_ADMIN_TENANT:-admin}
@@ -108,17 +106,7 @@ function spinner() {
 # Echo text to the log file, summary log file and stdout
 # echo_summary "something to say"
 function echo_summary() {
-    if [[ -t 3 && "$VERBOSE" != "True" ]]; then
-        kill >/dev/null 2>&1 $LAST_SPINNER_PID
-        if [ ! -z "$LAST_SPINNER_PID" ]; then
-            printf "\b\b\bdone\n" >&3
-        fi
         echo -e $@ >&6
-        spinner &
-        LAST_SPINNER_PID=$!
-    else
-        echo -e $@ >&6
-    fi
 }
 
 # Echo text only to stdout, no log files
@@ -126,6 +114,14 @@ function echo_summary() {
 function echo_nolog() {
     echo $@ >&3
 }
+
+#echo messages redirected to stderr with echo_msg
+#echo_msg "something to say"
+function echo_msg() {
+    echo -e $@ >&2
+}
+
+    
 
 function setup_logging() { 
     # Set up logging for ``contrail.sh``
@@ -153,9 +149,26 @@ function setup_logging() {
         # Redirect output according to config
 
         # Copy stdout to fd 3
+
+	#summary statements into LOGFILE,SUMMARY LOG File and console
+	#Always stderr into logfile,console.
+	#For LOG_LEVEL 1 stdout into logfile.
+	#For LOG_LEVEL 2 stdout into logfile.xtrace enabled.
+	#For LOG_LEVEL 3 stdout into logfile,console.xtrace enabled
+       
+        exec 6> >( tee -a "${SUMFILE}" "${LOGFILE}" )
         exec 3>&1
-        if [[ "$VERBOSE" == "True" ]]; then
-            # Redirect stdout/stderr to tee to write the log file
+        exec 2> >( awk '
+                      {
+                          cmd ="date +\"%Y-%m-%d %H:%M:%S \""
+                          cmd | getline now
+                          close("date +\"%Y-%m-%d %H:%M:%S \"")
+                          sub(/^/, now)
+                          print
+                          fflush()
+               }' | tee -a "${LOGFILE}" )
+
+        if [ $LOG_LEVEL -eq 1 ];then
             exec 1> >( awk '
                     {
                         cmd ="date +\"%Y-%m-%d %H:%M:%S \""
@@ -164,14 +177,31 @@ function setup_logging() {
                         sub(/^/, now)
                         print
                         fflush()
-                    }' | tee "${LOGFILE}" ) 2>&1
-            # Set up a second fd for output
-            exec 6> >( tee "${SUMFILE}" )
-        else
-            # Set fd 1 and 2 to primary logfile
-            exec 1> "${LOGFILE}" 2>&1
-            # Set fd 6 to summary logfile and stdout
-            exec 6> >( tee "${SUMFILE}" >&3 )
+	            }' | tee -a "${LOGFILE}">/dev/null) 
+	 
+	elif [ $LOG_LEVEL -eq 2 ]; then
+                exec 1> >( awk '
+                        {
+                            cmd ="date +\"%Y-%m-%d %H:%M:%S \""
+                            cmd | getline now
+                            close("date +\"%Y-%m-%d %H:%M:%S \"")
+                            sub(/^/, now)
+                            print
+                            fflush()
+                        }' | tee -a "${LOGFILE}">/dev/null)
+                set -x 
+ 
+        elif [ $LOG_LEVEL -eq 3 ]; then
+                exec 1> >( awk '
+                        {
+                            cmd ="date +\"%Y-%m-%d %H:%M:%S \""
+                            cmd | getline now
+                            close("date +\"%Y-%m-%d %H:%M:%S \"")
+                            sub(/^/, now)
+                            print
+                            fflush()
+                        }' | tee -a "${LOGFILE}" )
+                set -x 
         fi
 
         echo_summary "contrail.sh log $LOGFILE"
@@ -182,14 +212,14 @@ function setup_logging() {
         # Set up output redirection without log files
         # Copy stdout to fd 3
         exec 3>&1
-        if [[ "$VERBOSE" != "True" ]]; then
-            # Throw away stdout and stderr
-            exec 1>/dev/null 2>&1
-        fi
+        # Throw away stdout and stderr
+        exec 1>/dev/null 2>&1
         # Always send summary fd to original stdout
         exec 6>&3
     fi
 }
+
+setup_logging
 
 function download_redis {
     echo "Downloading dependencies"
@@ -457,13 +487,10 @@ function download_ncclient {
 }
 
 function build_contrail() {
-
+    
+    echo_summary "-----------------------BUILD PHASE STARTED------------------------"
     validstage_atoption "build"
     [[ $? -eq 1 ]] && invalid_option_exit "build"
-
-    echo "doing build_contrail"
-    echo_summary "doing build_contrail "
-    
     C_UID=$( id -u )
     C_GUID=$( id -g )
     sudo mkdir -p /var/log/contrail
@@ -537,7 +564,7 @@ function build_contrail() {
                 change_stage "fetch-packages" "Build"          
             fi
         else
-            echo "Selected profile is neither ALL nor COMPUTE"
+            echo_msg "Selected profile is neither ALL nor COMPUTE"
             exit
         fi
     else	
@@ -555,16 +582,16 @@ function build_contrail() {
             download_redis
             download_node_for_npm
     fi
+    echo_summary "-----------------------BUILD PHASE ENDED---------------------------"
 
  
 }
 
 function install_contrail() {
+  
+    echo_summary "-----------------------INSTALL PHASE STARTED------------------------" 
     validstage_atoption "install"
     [[ $? -eq 1 ]] && invalid_option_exit "install"
-
-    echo "doing install_contrail"
-    echo_summary "doing install_contrail "
     cd $CONTRAIL_SRC
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if [[ $(read_stage) == "Build" ]] || [[ $(read_stage) == "install" ]]; then
@@ -657,11 +684,10 @@ function install_contrail() {
             change_stage "Build" "install"         
         fi
     else
-        echo "Selected profile is neither ALL nor COMPUTE"
+        echo_msg "Selected profile is neither ALL nor COMPUTE"
         exit
     fi
-    echo "finished install_contrail"
-    echo_summary "finished install_contrail"
+    echo_summary "-----------------------INSTALL PHASE ENDED-------------------------"
 }
 
 function apply_patch() { 
@@ -818,6 +844,7 @@ function start_contrail() {
         SCREEN_HARDSTATUS='%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'
     fi 
     screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
+    echo_summary "-----------------------STARTING CONTRAIL---------------------------"
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
             REDIS_CONF="/etc/redis/redis.conf"
@@ -987,11 +1014,9 @@ END
 }
 
 function configure_contrail() {
+    echo_summary "-----------------------CONFIGURE PHASE STARTED----------------------"
     validstage_atoption "configure"
     [[ $? -eq 1 ]] && invalid_option_exit "configure"
-
-    echo "doing configure_contrail"
-    echo_summary "doing configure_contrail "
 
     C_UID=$( id -u )
     C_GUID=$( id -g )
@@ -1048,6 +1073,7 @@ function configure_contrail() {
     write_default_pmac 
     write_qemu_conf
     fixup_config_files
+    echo_summary "-----------------------CONFIGURE PHASE ENDED-----------------------"
 }
 
 function init_contrail() {
@@ -1059,9 +1085,9 @@ function check_contrail() {
 }
 
 function clean_contrail() {
-    echo_summary "starting clean_contrail"
+    echo_summary "-----------------------CLEAN PHASE STARTED-------------------------"
     python clean.py --conf_file 
-    echo_summary "Finished clean_contrail"
+    echo_summary "-----------------------CLEAN PHASE ENDED---------------------------"
 
 }
 
@@ -1076,6 +1102,7 @@ function stop_contrail() {
         fi
     fi
     (cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh stop)
+    echo_summary "-----------------------STOPPING CONTRAIL--------------------------"
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         screen_stop redis
         screen_stop cass
@@ -1148,7 +1175,6 @@ clean() {
 trap interrupt SIGINT
 interrupt() {
     local r=$?
-    set -o xtrace
     if [[ $(read_stage) == "python-dependencies" ]]; then
         if [[ -d $CONTRAIL_SRC/.repo ]];then
             sudo rm -r $CONTRAIL_SRC/.repo
@@ -1162,7 +1188,6 @@ interrupt() {
 [[ $(read_stage) == "nofile" ]] && write_stage "started"
 OPTION=$1
 ARGS_COUNT=$#
-setup_logging
 setup_root_access
 if [ $ARGS_COUNT -eq 0 ];
 then 
@@ -1171,16 +1196,16 @@ elif [ $ARGS_COUNT -eq 1 ] && [ "$OPTION" == "install" ] || [ "$OPTION" == "star
 then
     ${OPTION}_contrail
 else
-    echo "Usage ::contrail.sh [option]"
-    echo "contrail.sh(Without any option executes 1.build,2.install,3.configure,4.start phases)"
-    echo "ex:contrail.sh install"
-    echo "[options]:"
-    echo "build"
-    echo "install"
-    echo "start"
-    echo "stop"
-    echo "configure"
-    echo "clean"
+    echo_msg "Usage ::contrail.sh [option]"
+    echo_msg "contrail.sh(Without any option executes 1.build,2.install,3.configure,4.start phases)"
+    echo_msg "ex:contrail.sh install"
+    echo_msg "[options]:"
+    echo_msg "build"
+    echo_msg "install"
+    echo_msg "start"
+    echo_msg "stop"
+    echo_msg "configure"
+    echo_msg "clean"
 
 fi
 # Fin
@@ -1195,5 +1220,4 @@ else
     exec 1>&3
 fi
 
-# Restore xtrace
-$MY_XTRACE
+

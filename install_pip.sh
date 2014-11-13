@@ -9,8 +9,6 @@
 # Assumptions:
 # - update pip to $INSTALL_PIP_VERSION
 
-set -o errexit
-set -o xtrace
 
 # Keep track of the current directory
 TOP_DIR=`pwd`
