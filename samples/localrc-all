@@ -13,6 +13,13 @@ SERVICE_TOKEN=contrail123
 SERVICE_PASSWORD=contrail123
 ADMIN_PASSWORD=contrail123
 
+#set loglevel to 1/2/3 . Always stderr into logfile,console.
+#For LOG_LEVEL 1 stdout into logfile.
+#For LOG_LEVEL 2 stdout into logfile and xtrace commands into console.
+#For LOG_LEVEL 3 stdout and xtrace into logfile,console.
+
+LOG_LEVEL=3
+
 SERVICE_TIMEOUT=90
 SERVICE_HOST=localhost
 INSTALL_PROFILE=ALL 
