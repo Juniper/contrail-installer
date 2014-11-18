@@ -637,15 +637,25 @@ function install_contrail() {
             else
 		# install contrail modules
                 echo "Installing contrail modules"
-                apt_get install contrail-config python-contrail contrail-utils 
-                apt_get install contrail-control contrail-analytics contrail-lib 
-                apt_get install python-contrail-vrouter-api contrail-vrouter-utils 
-                apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-vrouter-agent 
+                apt_get install contrail-config 
+                apt_get install python-contrail 
+                apt_get install contrail-utils 
+                apt_get install contrail-control 
+                apt_get install contrail-analytics 
+                apt_get install contrail-lib 
+                apt_get install python-contrail-vrouter-api 
+                apt_get install contrail-vrouter-utils 
+                apt_get install contrail-vrouter-source 
+                apt_get install contrail-vrouter-dkms 
+                apt_get install contrail-vrouter-agent 
                 apt_get install neutron-plugin-contrail 
                 apt_get install contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
-                apt_get install contrail-nova-driver contrail-web-core contrail-web-controller
-                apt_get install ifmap-server python-ncclient
+                apt_get install contrail-nova-driver 
+                apt_get install contrail-web-core 
+                apt_get install contrail-web-controller
+                apt_get install ifmap-server 
+                apt_get install python-ncclient
 
                 # contrail neutron plugin installs ini file as root
                 sudo chown -R `whoami`:`whoami` /etc/neutron
