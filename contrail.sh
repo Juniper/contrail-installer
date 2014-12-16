@@ -936,7 +936,9 @@ function start_contrail() {
 
     fi
     # vrouter
-    test_insert_vrouter
+    if is_service_enabled agent; then
+        test_insert_vrouter
+    fi
 
     # agent
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
