@@ -291,7 +291,9 @@ function download_dependencies {
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
         apt_get install linux-headers-$(uname -r)
         sudo -E add-apt-repository -y cloud-archive:havana
+        sudo -E add-apt-repository -y ppa:opencontrail/ppa
         apt_get update
+        apt_get install libipfix
         apt_get install python-neutron
         if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install libboost-dev libboost-chrono-dev libboost-date-time-dev
@@ -568,11 +570,8 @@ function build_contrail() {
             exit
         fi
     else	
-        if [[ "$LAUNCHPAD_BRANCH" = "PPA" ]]; then
-	    sudo -E add-apt-repository -y ppa:opencontrail/ppa
-        else
+        if [[ "$LAUNCHPAD_BRANCH" = "mainline" ]]; then
             sudo -E add-apt-repository -y ppa:opencontrail/snapshots
-            sudo -E add-apt-repository -y ppa:opencontrail/ppa
         fi
         apt_get update
         change_stage "python-dependencies" "Build"
