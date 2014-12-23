@@ -234,13 +234,6 @@ function download_redis {
                 # service will be started later
                 sudo service redis-server stop
                 cd ${contrail_cwd}
-            else
-                sudo apt-get install libjemalloc1
-                wget http://us.archive.ubuntu.com/ubuntu/pool/universe/r/redis/redis-server_2.6.13-1_amd64.deb
-                sudo dpkg -i redis-server_2.6.13-1_amd64.deb
-                rm -rf redis-server_2.6.13-1_amd64.deb
-                # service will be started later
-                sudo service redis-server stop
             fi
 
         fi
@@ -275,25 +268,29 @@ function download_dependencies {
     echo "Downloading dependencies"
     if is_ubuntu; then
         apt_get update
-        apt_get install patch scons flex bison make vim unzip
-        apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
-        apt_get install python-dev autoconf automake build-essential libtool protobuf-compiler libprotobuf-dev
-        apt_get install libevent-dev libxml2-dev libxslt-dev
-        apt_get install uml-utilities
-        apt_get install libvirt-bin
-        apt_get install python-software-properties
         apt_get install python-setuptools
         apt_get install python-novaclient
-        apt_get install python-lxml python-redis python-jsonpickle
         apt_get install curl
         apt_get install chkconfig screen
-        apt_get install ant debhelper default-jdk javahelper
+        apt_get install default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
-        apt_get install linux-headers-$(uname -r)
         sudo -E add-apt-repository -y cloud-archive:havana
         sudo -E add-apt-repository -y ppa:opencontrail/ppa
         apt_get update
-        apt_get install libipfix
+
+        if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+            apt_get install patch scons flex bison make vim unzip
+            apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
+            apt_get install python-dev autoconf automake build-essential libtool protobuf-compiler libprotobuf-dev
+            apt_get install libevent-dev libxml2-dev libxslt-dev
+            apt_get install uml-utilities
+            apt_get install libvirt-bin
+            apt_get install python-software-properties
+            apt_get install python-lxml python-redis python-jsonpickle
+            apt_get install ant debhelper 
+            apt_get install linux-headers-$(uname -r)
+            apt_get install libipfix
+        fi	
         apt_get install python-neutron
         if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install libboost-dev libboost-chrono-dev libboost-date-time-dev
@@ -330,13 +327,15 @@ function download_python_dependencies {
     # api server requirements
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+        pip_install gevent geventhttpclient==1.0a thrift
+        pip_install netifaces fabric argparse
+        pip_install bottle
+        pip_install uuid psutil
+        pip_install netaddr bitarray 
+        pip_install --upgrade redis
+    fi
     pip_install -U setuptools
-    pip_install gevent geventhttpclient==1.0a thrift
-    pip_install netifaces fabric argparse
-    pip_install bottle
-    pip_install uuid psutil
-    pip_install netaddr bitarray 
-    pip_install --upgrade redis
     pip_install amqp
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
