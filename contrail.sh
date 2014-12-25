@@ -282,6 +282,9 @@ function download_dependencies {
         apt_get install uml-utilities
         apt_get install libvirt-bin
         apt_get install python-software-properties
+        if [[ ${DISTRO} =~ (trusty) ]]; then
+            apt_get install software-properties-common
+        fi
         apt_get install python-setuptools
         apt_get install python-novaclient
         apt_get install python-lxml python-redis python-jsonpickle
@@ -876,9 +879,9 @@ function start_contrail() {
         screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh start"
 
 	if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it ifmap "cd $CONTRAIL_SRC/build/packages/ifmap-server; java -jar ./irond.jar"
+            screen_it ifmap "cd $CONTRAIL_SRC/build/packages/ifmap-server; sudo java -jar ./irond.jar"
         else
-            screen_it ifmap "cd /usr/share/ifmap-server; java -jar ./irond.jar" 
+            screen_it ifmap "cd /usr/share/ifmap-server; sudo java -jar ./irond.jar" 
         fi
         sleep 2
     
@@ -898,9 +901,9 @@ function start_contrail() {
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         else
-            screen_it control "export LD_LIBRARY_PATH=/usr/lib; /usr/bin/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=/usr/lib; sudo /usr/bin/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
 
         # collector/vizd
