@@ -896,7 +896,7 @@ function start_contrail() {
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         else
             screen_it control "export LD_LIBRARY_PATH=/usr/lib; /usr/bin/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
