@@ -68,6 +68,10 @@ function apt_get() {
         http_proxy=$http_proxy https_proxy=$https_proxy \
         no_proxy=$no_proxy \
         apt-get --option "Dpkg::Options::=--force-confold" --force-yes --assume-yes "$@"
+        if [[ $? -gt 0 ]] ; then
+            echo "Failure in installing package : $@"
+            exit
+        fi
 }
 
 
