@@ -274,6 +274,7 @@ function download_dependencies {
         apt_get install chkconfig screen
         apt_get install default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
+	apt_get install python-software-properties
         sudo -E add-apt-repository -y cloud-archive:havana
         sudo -E add-apt-repository -y ppa:opencontrail/ppa
         apt_get update
