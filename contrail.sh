@@ -271,7 +271,8 @@ function download_dependencies {
         apt_get install python-setuptools
         apt_get install python-novaclient
         apt_get install curl
-        apt_get install chkconfig screen
+#       apt_get install chkconfig
+        apt_get install screen
         apt_get install default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
 	apt_get install python-software-properties
