@@ -594,8 +594,8 @@ function replace_irond_basic_auth_users()
           sudo chmod 664 $file
           sudo chmod 664 $file1
       else
-          file="/opt/stack/contrail/build/packages/ifmap-server/basicauthusers.properties"
-          file1="/opt/stack/contrail/build/packages/ifmap-server/publisher.properties"
+          file="$CONTRAIL_SRC/build/packages/ifmap-server/basicauthusers.properties"
+          file1="$CONTRAIL_SRC/build/packages/ifmap-server/publisher.properties"
           sudo chown `whoami`:`whoami` $file
           sudo chown `whoami`:`whoami` $file1
           sudo chmod 664 $file

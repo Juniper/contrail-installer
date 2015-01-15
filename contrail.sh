@@ -526,7 +526,7 @@ function build_contrail() {
     sudo mkdir -p $CONTRAIL_SRC
     sudo chown $C_UID:$C_GUID $CONTRAIL_SRC
 
-    THIRDPARTY_SRC=${THIRDPARTY_SRC:-/opt/stack/contrail/third_party}
+    THIRDPARTY_SRC=${THIRDPARTY_SRC:-$CONTRAIL_SRC/third_party}
     sudo mkdir -p $THIRDPARTY_SRC
     sudo chown $C_UID:$C_GUID $THIRDPARTY_SRC
 
@@ -629,8 +629,8 @@ function install_contrail() {
     		cd $CONTRAIL_SRC
     		python contrail-webui-third-party/fetch_packages.py
     		sed -ie "s/config\.discoveryService\.enable.*$/config\.discoveryService\.enable = false;/" contrail-web-core/config/config.global.js
-    		sed -ie "s/config\.featurePkg\.webController\.path.*$/config\.featurePkg\.webController\.path = '\/opt\/stack\/contrail\/contrail-web-controller';/" contrail-web-core/config/config.global.js
-    		sed -ie "s/config\.core_path.*$/config\.core_path = '\/opt\/stack\/contrail\/contrail-web-core';/" contrail-web-controller/webroot/common/js/controller.config.global.js
+    		sed -ie "s/config\.featurePkg\.webController\.path.*$/config\.featurePkg\.webController\.path = '$CONTRAIL_SRC\/contrail-web-controller';/" contrail-web-core/config/config.global.js
+    		sed -ie "s/config\.core_path.*$/config\.core_path = '$CONTRAIL_SRC\/contrail-web-core';/" contrail-web-controller/webroot/common/js/controller.config.global.js
     		cd contrail-web-core
     		make fetch-pkgs-prod
     		make dev-env REPO=webController
@@ -902,14 +902,14 @@ function start_contrail() {
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it control "export LD_LIBRARY_PATH=/opt/stack/contrail/build/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         else
             screen_it control "export LD_LIBRARY_PATH=/usr/lib; sudo /usr/bin/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
 
         # collector/vizd
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/analytics/vizd"
+            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/analytics/vizd"
         else
             screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
         fi
@@ -921,7 +921,7 @@ function start_contrail() {
 
         #qed_param
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
-            screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
+            screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
         else
             screen_it query-engine "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine"
         fi
@@ -948,7 +948,7 @@ function start_contrail() {
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         sudo sysctl -w net.ipv4.ip_forward=1
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            sudo /opt/stack/contrail/build/production/vrouter/utils/vif --create vgw --mac 00:01:00:5e:00:00
+            sudo $CONTRAIL_SRC/build/production/vrouter/utils/vif --create vgw --mac 00:01:00:5e:00:00
         else
             sudo /usr/bin/vif --create vgw --mac 00:01:00:5e:00:00
         fi            
@@ -978,7 +978,7 @@ EOF2
         cat > $TOP_DIR/bin/vnsw.hlpr <<END
 #! /bin/bash
 PATH=$TOP_DIR/bin:$PATH
-LD_LIBRARY_PATH=/opt/stack/contrail/build/lib $CONTRAIL_SRC/build/production/vnsw/agent/contrail/contrail-vrouter-agent --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
+LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/vnsw/agent/contrail/contrail-vrouter-agent --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
 END
   
     else
@@ -1010,8 +1010,8 @@ END
         screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
 
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
-            screen_it ui-jobs "cd /opt/stack/contrail/contrail-web-core; sudo node jobServerStart.js"
-            screen_it ui-webs "cd /opt/stack/contrail/contrail-web-core; sudo node webServerStart.js"
+            screen_it ui-jobs "cd $CONTRAIL_SRC/contrail-web-core; sudo node jobServerStart.js"
+            screen_it ui-webs "cd $CONTRAIL_SRC/contrail-web-core; sudo node webServerStart.js"
         else
             sudo service contrail-webui-webserver start
             sudo service contrail-webui-jobserver start
