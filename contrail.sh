@@ -340,6 +340,9 @@ function download_python_dependencies {
     fi
     pip_install -U setuptools
     pip_install amqp
+
+    # override older version brought by python-neutron. Newer version needed by devstack. 
+    pip_install -U oslo.rootwrap
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
