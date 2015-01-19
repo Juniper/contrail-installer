@@ -339,6 +339,8 @@ function download_python_dependencies {
     fi
     pip_install -U setuptools
     pip_install amqp
+    #Updating the rootwrap fetched by python-neutron
+    pip_install -U oslo.rootwrap
     
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
