@@ -718,7 +718,11 @@ function fixup_config_files()
     setenforce 0
 
     # Disable iptables      
-    sudo chkconfig iptables off
+    if [[ "$DISTRO" != "trusty" ]]; then
+        sudo chkconfig iptables off
+    else
+        sudo sysv-rc-conf iptables off
+    fi
     sudo iptables --flush 
     
     sudo rm /etc/contrail/ctrl-details
@@ -804,5 +808,10 @@ function fixup_config_files()
         #migrate_routes $dev
         :
     fi
-    sudo chkconfig network on 
+    if [[ "$DISTRO" != "trusty" ]]; then
+        sudo chkconfig network on
+    else
+        sudo sysv-rc-conf network on
+    fi
+
 }
