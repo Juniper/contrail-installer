@@ -271,7 +271,11 @@ function download_dependencies {
         apt_get install python-setuptools
         apt_get install python-novaclient
         apt_get install curl
-#       apt_get install chkconfig
+	if [[ "$DISTRO" != "trusty" ]]; then
+            apt_get install chkconfig
+        else
+            apt_get install sysv-rc-conf
+        fi
         apt_get install screen
         apt_get install default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
@@ -340,10 +344,12 @@ function download_python_dependencies {
     fi
     pip_install -U setuptools
     pip_install amqp
-
-    # override older version brought by python-neutron. Newer version needed by devstack. 
+    #Updating the rootwrap fetched by python-neutron
     pip_install -U oslo.rootwrap
     
+    #Updating the rootwrap fetched by python-neutron
+    pip_install -U oslo.rootwrap
+
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
             :
@@ -663,6 +669,8 @@ function install_contrail() {
                 apt_get install ifmap-server 
                 apt_get install python-ncclient
 
+		#Updating the messaging installed by python-nova
+                pip_install -U oslo.messaging
                 # contrail neutron plugin installs ini file as root
                 sudo chown -R `whoami`:`whoami` /etc/neutron
             fi
