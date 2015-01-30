@@ -26,7 +26,7 @@ INSTALL_PROFILE=ALL
 PHYSICAL_INTERFACE=eth0
 
 # to get source code make it as False 
-CONTRAIL_DEFAULT_INSTALL=True
+CONTRAIL_DEFAULT_INSTALL=False
 
 # to get the ppa packages uncomment
 # LAUNCHPAD_BRANCH=mainline
@@ -36,3 +36,7 @@ CONTRAIL_DEFAULT_INSTALL=True
 
 # proto for openstack bits. Use HTTPS if git is firewalled
 GIT_BASE=https://github.com
+
+CASS_MAX_HEAP_SIZE=500M
+CASS_HEAP_NEWSIZE=100M
+

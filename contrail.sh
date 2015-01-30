@@ -677,6 +677,7 @@ function install_contrail() {
             # get cassandra
             download_cassandra
             sudo rabbitmqctl change_password guest $RABBIT_PASSWORD
+            sudo rabbitmqctl set_vm_memory_high_watermark 0.2
             download_zookeeper
             change_stage "Build" "install"
             
@@ -756,7 +757,7 @@ function insert_vrouter() {
     fi
     # don't die in small memory environments
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-        sudo insmod $CONTRAIL_SRC/vrouter/$kmod vr_flow_entries=4096 vr_oflow_entries=512
+        sudo insmod $CONTRAIL_SRC/vrouter/$kmod vr_flow_entries=1024 vr_oflow_entries=128
         if [[ $? -eq 1 ]] ; then 
             exit 1
         fi
