@@ -420,17 +420,25 @@ function find_gateway()
 function get_Mask()
 {
     interface=$1
-    mask=$(ifconfig $interface|grep Mask | awk 'BEGIN{FS=OFS="Mask"}{print $2}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
-    echo $mask
-
+    if is_ubuntu; then
+        mask=$(ifconfig $interface|grep Mask | awk 'BEGIN{FS=OFS="Mask"}{print $2}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
+        echo $mask
+    else
+        mask=$(ifconfig $interface|sed -ne 's/.*[[net]*]*mask[: ]*\([0-9.]*\).*/\1/i p') 
+        echo $mask
+    fi
 }
 
 function get_management_ip()
 {
     interface=$1
-    management_ip=$(ifconfig $interface|grep -e addr| awk 'BEGIN{FS=OFS="net addr"}{print $2}'|awk '{print $1}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
-    echo $management_ip
-
+    if is_ubuntu; then    
+        management_ip=$(ifconfig $interface|grep -e addr| awk 'BEGIN{FS=OFS="net addr"}{print $2}'|awk '{print $1}'|awk 'BEGIN{FS=OFS=":"}{print $2}')
+        echo $management_ip
+    else
+        management_ip=$(ifconfig $interface|sed -ne 's/.*inet [[addr]*]*[: ]*\([0-9.]*\).*/\1/i p')
+        echo $management_ip
+    fi
 }
 function get_intf_ip()
 {
@@ -489,7 +497,12 @@ function _rewrite_ifcfg_file()
     fi
     mac=$(get_Mac $dev)
     ifcfg_file="/etc/sysconfig/network-scripts/ifcfg-$dev"
-     
+    if is_fedora ; then
+            echo "#Contrail-$dev" >> $ifcfg_file
+            echo "ONBOOT=yes" >> $ifcfg_file
+            echo "DEVICE="$dev"" >> $ifcfg_file
+            echo "BOOTPROTO=dhcp" >> $ifcfg_file
+    fi
     if [[ ! -f $ifcfg_file ]]; then
         ifcfg_file=$temp_dir_name'/ifcfg-'$dev
         rm $ifcfg_file
@@ -551,7 +564,11 @@ function migrate_routes()
 function get_Mac()
 {
     interface=$1
-    mac=$(ifconfig $interface|grep HWaddr | awk '{print $5}')
+    if  is_ubuntu; then
+        mac=$(ifconfig $interface|grep HWaddr | awk '{print $5}')
+    elif is_fedora; then
+        mac=$(ifconfig $interface|grep ether | awk '{print $2}')
+    fi   
     echo $mac
 
 }
@@ -594,8 +611,13 @@ function replace_irond_basic_auth_users()
           sudo chmod 664 $file
           sudo chmod 664 $file1
       else
-          file="$CONTRAIL_SRC/build/packages/ifmap-server/basicauthusers.properties"
-          file1="$CONTRAIL_SRC/build/packages/ifmap-server/publisher.properties"
+          if is_ubuntu; then
+             file="$CONTRAIL_SRC/build/packages/ifmap-server/basicauthusers.properties"
+             file1="$CONTRAIL_SRC/build/packages/ifmap-server/publisher.properties"
+          else
+              file="/opt/stack/contrail/third_party/irond-0.3.0-bin/basicauthusers.properties"
+              file1="/opt/stack/contrail/third_party/irond-0.3.0-bin/publisher.properties"          
+          fi
           sudo chown `whoami`:`whoami` $file
           sudo chown `whoami`:`whoami` $file1
           sudo chmod 664 $file
@@ -632,27 +654,32 @@ function write_default_pmac()
 
 function write_ifcfg-vhost0()
 {
-    file="/etc/contrail/ifcfg-vhost0"
+    vhost_file="/etc/contrail/ifcfg-vhost0"
     value=$(check_dev 'vhost0')
     if [[ $value = "interface found" ]];then 
         ip=$(get_management_ip vhost0)
     else
-        ip=$(get_management_ip eth0)
+        ip=$(get_management_ip $PHYSICAL_INTERFACE)
     fi
-    if [[ -f $file ]]; then
-        sudo rm $file
+    if [[ -f $vhost_file ]]; then
+        sudo rm $vhost_file
     fi
-    echo "#Contrail vhost0" >> $file
-    echo "DEVICE=vhost0" >> $file
-    echo "ONBOOT=yes" >> $file
-    echo "BOOTPROTO=none" >> $file 
-    echo "IPV6INIT=no" >> $file
-    echo "USERCTL=yes" >> $file
-    echo "IPADDR=$ip" >> $file
-    echo "NETMASK=$(get_Mask $PHYSICAL_INTERFACE)" >> $file
-    echo "NM_CONTROLLED=no" >>$file
-    echo "#NETWORK MANAGER BUG WORKAROUND" >> $file
-    echo "SUBCHANNELS=1,2,3" >> $file	
+    echo "#Contrail vhost0" >> $vhost_file
+    echo "DEVICE=vhost0" >> $vhost_file
+    #echo "ONBOOT=yes" >> $vhost_file
+    echo "ONBOOT=no" >> $vhost_file
+    #echo "BOOTPROTO=static" >> $vhost_file 
+    echo "BOOTPROTO=none" >> $vhost_file 
+    echo "IPV6INIT=no" >> $vhost_file
+    echo "USERCTL=yes" >> $vhost_file
+    echo "HWADDR=$(get_Mac $PHYSICAL_INTERFACE)" >> $vhost_file
+    #echo "TYPE=Ethernet" >> $vhost_file 
+    echo "IPADDR=$ip" >> $vhost_file
+    echo "NETMASK=$(get_Mask $PHYSICAL_INTERFACE)" >> $vhost_file
+    echo "GATEWAY=$(find_gateway $PHYSICAL_INTERFACE)" >> $vhost_file 
+    echo "NM_CONTROLLED=no" >>$vhost_file
+    echo "#NETWORK MANAGER BUG WORKAROUND" >> $vhost_file
+    echo "SUBCHANNELS=1,2,3" >> $vhost_file	
 
 }
 
