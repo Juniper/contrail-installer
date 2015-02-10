@@ -126,23 +126,21 @@ function check_network()
     #echo $status
 }
 
-function launch_vm(){
+function generate_keys()
+{
+    yes | ssh-keygen -N "" -f sshkey
+    keypairs=$(nova keypair-add --pub-key sshkey.pub sshkey) 
+    echo "$keypairs" >> $report_file
+}
 
-    
+function launch_vm(){
     vm_name=$1
     report_file=$2
     image=cirros-0.3.1-x86_64-uec
     flavor=m1.nano
     vmargs="--image $image --flavor $flavor --key-name sshkey"
 
-    yes | ssh-keygen -N "" -f sshkey
-    keypairs=$(nova keypair-add --pub-key sshkey.pub sshkey) 
-    echo "$keypairs" >> $report_file
-
-    
     nova boot $vmargs --nic net-id=$net_id $vm_name >> $report_file
-
-    
 }
 
 function check_vm_status()
@@ -216,6 +214,7 @@ function start_sanity_script()
                 rm $report_file
             fi
 
+            generate_keys
             launch_vm vm1 $report_file
             launch_vm vm2 $report_file
             sleep 30
