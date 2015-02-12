@@ -795,8 +795,8 @@ function fixup_config_files()
     prsv_cfg=()
     mtu=$(get_if_mtu $dev)
     if [[ $mtu ]]; then
-        dcfg='MTU=$mtu'
-        echo "$dcfg \n" >> "/etc/contrail/ifcfg-vhost0"
+        dcfg="MTU=$mtu"
+        echo "$dcfg" >> "/etc/contrail/ifcfg-vhost0"
         prsv_cfg+=(dcfg) 
     fi    
     sudo mv /etc/contrail/ifcfg-vhost0 /etc/sysconfig/network-scripts/ifcfg-vhost0       
