@@ -64,6 +64,9 @@ DISCOVERY_IP=${DISCOVERY_IP:-$CFGM_IP}
 CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
 CONTRAIL_DEFAULT_INSTALL=${CONTRAIL_DEFAULT_INSTALL:-True}
 
+NB_JOBS=$(($(grep -c processor /proc/cpuinfo)+1))
+SCONS_ARGS="-j$NB_JOBS --opt=production"
+
 if [[ "$RECLONE" == "True" ]]; then
     echo "Recloning the contrail again"
     sudo rm .stage.txt
@@ -564,16 +567,16 @@ function build_contrail() {
         cd $CONTRAIL_SRC
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             if [[ $(read_stage) == "fetch-packages" ]]; then
-                sudo scons --opt=production
+                sudo scons $SCONS_ARGS
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit
                 change_stage "fetch-packages" "Build"
             fi
         elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
             if [[ $(read_stage) == "fetch-packages" ]]; then
-                sudo scons --opt=production controller/src/vnsw
-                sudo scons --opt=production vrouter
-                sudo scons --opt=production openstack/nova_contrail_vif
+                sudo scons $SCONS_ARGS controller/src/vnsw
+                sudo scons $SCONS_ARGS vrouter
+                sudo scons $SCONS_ARGS openstack/nova_contrail_vif
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit
                 change_stage "fetch-packages" "Build"          
@@ -608,7 +611,7 @@ function install_contrail() {
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if [[ $(read_stage) == "Build" ]] || [[ $(read_stage) == "install" ]]; then
             if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
-                sudo scons --opt=production --root=/ install
+                sudo scons $SCONS_ARGS --root=/ install
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit
                 cd ${contrail_cwd}
@@ -685,9 +688,9 @@ function install_contrail() {
     elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
         if [[ $(read_stage) == "Build" ]] || [[ $(read_stage) == "install" ]]; then
             if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-                sudo scons --opt=production --root=/ controller/src/vnsw install
-                sudo scons --opt=production --root=/ vrouter install
-                sudo scons --opt=production --root=/ openstack/nova_contrail_vif install
+                sudo scons $SCONS_ARGS --root=/ controller/src/vnsw install
+                sudo scons $SCONS_ARGS --root=/ vrouter install
+                sudo scons $SCONS_ARGS --root=/ openstack/nova_contrail_vif install
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit
                 cd ${contrail_cwd}
