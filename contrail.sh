@@ -876,6 +876,11 @@ function start_contrail() {
     fi 
     screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
     echo_summary "-----------------------STARTING CONTRAIL---------------------------"
+    # vrouter
+    if is_service_enabled agent; then
+        test_insert_vrouter
+    fi
+
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         if is_ubuntu; then
             REDIS_CONF="/etc/redis/redis.conf"
@@ -955,10 +960,6 @@ function start_contrail() {
         #changed because control_param.conf is commented
         python $TOP_DIR/provision_vrouter.py --host_name `hostname` --host_ip $CONTROL_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
 
-    fi
-    # vrouter
-    if is_service_enabled agent; then
-        test_insert_vrouter
     fi
 
     # agent
