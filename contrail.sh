@@ -242,9 +242,8 @@ function download_redis {
         fi
     else
         if ! which redis-server > /dev/null 2>&1 ; then
-            wget http://mir01.syntis.net/atomic/fedora/17/x86_64/RPMS/redis-2.6.13-3.fc17.art.x86_64.rpm
-            sudo yum -y install redis-2.6.13-3.fc17.art.x86_64.rpm
-            rm -rf redis-2.6.13-3.fc17.art.x86_64.rpm
+            yum_install redis
+            sudo service redis-server stop
         fi
     fi
 }
@@ -274,7 +273,7 @@ function download_dependencies {
         apt_get install python-setuptools
         apt_get install python-novaclient
         apt_get install curl
-	if [[ "$DISTRO" != "trusty" ]]; then
+	    if [[ "$DISTRO" != "trusty" ]]; then
             apt_get install chkconfig
         else
             apt_get install sysv-rc-conf
@@ -282,7 +281,7 @@ function download_dependencies {
         apt_get install screen
         apt_get install default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
-	apt_get install python-software-properties
+	    apt_get install python-software-properties
         sudo -E add-apt-repository -y cloud-archive:havana
         sudo -E add-apt-repository -y ppa:opencontrail/ppa
         apt_get update
@@ -317,18 +316,52 @@ function download_dependencies {
         fi
         apt_get install python-sphinx
     else
-        sudo yum -y install patch scons flex bison make vim
-        sudo yum -y install expat-devel gettext-devel curl-devel
-        sudo yum -y install gcc-c++ python-devel autoconf automake libtool
-        sudo yum -y install libevent libevent-devel libxml2-devel libxslt-devel
-	sudo yum -y install openssl-devel
-        sudo yum -y install tunctl
-        sudo yum -y install libvirt-bin
-        sudo yum -y install python-setuptools
-        sudo yum -y install python-lxml
-        sudo yum -y install curl
-        sudo yum -y install chkconfig
-        sudo yum -y install kernel-headers
+        yum_install wget
+
+        #comment to be updated #harsha # the epel 7 repository is added for installation of packages not commonly available
+        if ! rpm -q epel-release-7-5.noarch.rpm ; then
+            wget https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+            sudo rpm -Uvh epel-release-7-5.noarch.rpm
+        fi
+       
+        yum_install patch scons flex bison make vim bzip2 unzip
+        yum_install expat-devel gettext-devel curl-devel
+        yum_install gcc-c++ python-devel autoconf automake libtool
+        yum_install protobuf-compiler protobuf protobuf-devel
+        yum_install libevent libevent-devel libcurl-devel libxml2-devel libxslt-devel
+        yum_install openssl-devel boost-devel tbb-devel
+        yum_install libvirt
+        yum_install python-setuptools net-tools 
+        yum_install python-lxml 
+        yum_install libpcap libpcap-devel
+        yum_install curl
+        yum_install chkconfig screen 
+        yum_install erlang
+        yum_install python-sphinx
+        yum_install python-kombu
+
+        #disabling firewall port for rabbitmq
+        yum_install rabbitmq-server
+        sudo firewall-cmd --permanent --add-port=5672/tcp
+        sudo firewall-cmd --reload
+        sudo setsebool -P nis_enabled 1 
+        sudo service rabbitmq-server start
+        sudo chkconfig rabbitmq-server on
+     
+        #added for installing python-neutron
+        wget ftp://ftp.pbone.net/mirror/ftp.scientificlinux.org/linux/scientific/7.0/x86_64/os/Packages/kernel-devel-3.10.0-123.el7.x86_64.rpm
+        wget https://repos.fedorapeople.org/repos/openstack/openstack-juno/rdo-release-juno-1.noarch.rpm
+        sudo rpm -Uvh rdo-release-juno-1.noarch.rpm
+        yum_install python-neutron
+
+        # for installing kenel-devel
+        wget ftp://ftp.pbone.net/mirror/ftp.scientificlinux.org/linux/scientific/7.0/x86_64/os/Packages/kernel-devel-3.10.0-123.el7.x86_64.rpm
+        sudo yum -y --nogpgcheck localinstall kernel-devel-3.10.0-123.el7.x86_64.rpm
+
+        # installing open-jdk 7
+        wget ftp://fr2.rpmfind.net/linux/centos/7.0.1406/updates/x86_64/Packages/java-1.7.0-openjdk-1.7.0.71-2.5.3.1.el7_0.x86_64.rpm
+        sudo yum -y --nogpgcheck localinstall java-1.7.0-openjdk-1.7.0.71-2.5.3.1.el7_0.x86_64.rpm
+ 
     fi
     
 }
@@ -355,12 +388,6 @@ function download_python_dependencies {
     pip_install -U oslo.rootwrap
 
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
-        if is_ubuntu; then
-            :
-            #apt_get install redis-server
-        else
-            sudo yum -y install java-1.7.0-openjdk
-        fi
         pip_install pycassa stevedore xmltodict python-keystoneclient
         pip_install kazoo pyinotify
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
@@ -463,11 +490,11 @@ function download_cassandra {
             # don't start cassandra at boot.  I'll screen_it later
             sudo service cassandra stop
             sudo update-rc.d -f cassandra remove
-        elif [ ! -d $CONTRAIL_SRC/third_party/apache-cassandra-2.0.2-bin ]; then
+        elif [ ! -d $CONTRAIL_SRC/third_party/apache-cassandra-2.1.2-bin ]; then
             contrail_cwd=$(pwd)
             cd $CONTRAIL_SRC/third_party
-            wget http://repo1.maven.org/maven2/org/apache/cassandra/apache-cassandra/2.0.2/apache-cassandra-2.0.2-bin.tar.gz
-            tar xvzf apache-cassandra-2.0.2-bin.tar.gz
+            wget http://repo1.maven.org/maven2/org/apache/cassandra/apache-cassandra/2.1.2/apache-cassandra-2.1.2-bin.tar.gz
+            tar xvzf apache-cassandra-2.1.2-bin.tar.gz
             cd ${contrail_cwd}
         fi
     fi
@@ -503,6 +530,20 @@ function download_ncclient {
     fi
 }
 
+#added this for source installation
+function setup_libipfix() {
+  echo "installing libipfix third_party"
+  contrail_cwd=$(pwd)
+  cd $THIRDPARTY_SRC
+  git clone https://github.com/tubav/libipfix.git
+  cd libipfix
+  /bin/bash configure
+  make
+  sudo make install
+  cd ${contrail_cwd}
+}
+
+
 function build_contrail() {
     
     echo_summary "-----------------------BUILD PHASE STARTED------------------------"
@@ -513,13 +554,7 @@ function build_contrail() {
     sudo mkdir -p /var/log/contrail
     sudo chown $C_UID:$C_GUID /var/log/contrail
     sudo chmod 755 /var/log/contrail/*
-    
-    # basic dependencies
-    if ! which repo > /dev/null 2>&1 ; then
-	wget http://commondatastorage.googleapis.com/git-repo-downloads/repo
-        chmod 0755 repo
-	sudo mv repo /usr/bin
-    fi
+   
 
     #checking whether previous execution stage of script is at started then
     #only allow to get the dependencies
@@ -529,6 +564,14 @@ function build_contrail() {
         change_stage "started" "Dependencies"
     fi
    
+ 
+    # basic dependencies
+    if ! which repo > /dev/null 2>&1 ; then
+	wget http://commondatastorage.googleapis.com/git-repo-downloads/repo
+        chmod 0755 repo
+	sudo mv repo /usr/bin
+    fi
+
     source install_pip.sh
     /bin/bash install_pip.sh
         
@@ -565,7 +608,12 @@ function build_contrail() {
         fi
 
         (cd third_party/thrift-*; touch configure.ac README ChangeLog; autoreconf --force --install)
-        cd $CONTRAIL_SRC
+       
+        
+        if is_fedora && [[ ! -d $THIRDPARTY_SRC/libipfix ]]; then
+            setup_libipfix
+        fi
+
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             if [[ $(read_stage) == "fetch-packages" ]]; then
                 sudo scons $SCONS_ARGS
@@ -634,8 +682,15 @@ function install_contrail() {
                 #download_ifmap_irond
                 cd $CONTRAIL_SRC
                 sudo chown -R `whoami`:`whoami` build/
-                sudo -E make -f packages.make package-ifmap-server  
-                sudo cp $CONTRAIL_SRC/build/packages/ifmap-server/build/irond.jar $CONTRAIL_SRC/build/packages/ifmap-server  
+                if is_ubuntu; then
+                    sudo -E make -f packages.make package-ifmap-server  
+                    sudo cp $CONTRAIL_SRC/build/packages/ifmap-server/build/irond.jar $CONTRAIL_SRC/build/packages/ifmap-server  
+                else
+                    cd third_party
+                    wget http://trust.f4.hs-hannover.de/download/iron/archive/irond-0.3.0-bin.zip
+                    unzip irond-0.3.0-bin.zip
+                fi
+                
                 # ncclient
                 download_ncclient
  
@@ -756,8 +811,9 @@ function insert_vrouter() {
 	source $VHOST_CFG
     else
 	DEVICE=vhost0
-	IPADDR=$(sudo ifconfig $EXT_DEV | sed -ne 's/.*inet *addr[: ]*\([0-9.]*\).*/\1/i p')
-	NETMASK=$(sudo ifconfig $EXT_DEV | sed -ne 's/.*mask[: *]\([0-9.]*\).*/\1/i p')
+        IPADDR=$(sudo ifconfig $EXT_DEV | sed -ne 's/.*inet [[addr]*]*[: ]*\([0-9.]*\).*/\1/i p')
+        NETMASK=$(sudo ifconfig $EXT_DEV | sed -ne 's/.*[[net]*]*mask[: *]\([0-9.]*\).*/\1/i p')
+
     fi
     # don't die in small memory environments
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
@@ -825,12 +881,10 @@ END { @dns && print(" dns-nameservers ", join(" ", @dns), "\n") }' /etc/resolv.c
 	sleep 10
 	sudo ifup -i /tmp/interfaces $dev
     else
-	echo "Sleeping 10 seconds to allow link state to settle"
-	sudo ifup $DEVICE
-	sudo cp /etc/contrail/ifcfg-$dev /etc/sysconfig/network-scripts
-	sleep 10
-	echo "Restarting network service"
-	sudo service network restart
+        sudo ifdown $dev 
+        sleep 10
+        sudo ifup $DEVICE         
+        sleep 10
     fi
 }
 
@@ -866,6 +920,10 @@ function start_contrail() {
         echo "contrail is already running to restart use contrail.sh stop and contrail.sh start"
         exit 
     fi
+ 
+    #to overwrite the PROMPT_COMMAND lines for screens
+    sudo sed -i'' '27,28 s/^/#/' /etc/bashrc
+
     # save screen settings
     SAVED_SCREEN_NAME=$SCREEN_NAME
     SCREEN_NAME="contrail"
@@ -888,7 +946,7 @@ function start_contrail() {
             CASS_PATH="/usr/sbin/cassandra"
         else
             REDIS_CONF="/etc/redis.conf"
-            CASS_PATH="$CONTRAIL_SRC/third_party/apache-cassandra-2.0.2/bin/cassandra"
+            CASS_PATH="$CONTRAIL_SRC/third_party/apache-cassandra-2.1.2/bin/cassandra"
         fi
 
         if [[ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]]; then
@@ -903,7 +961,11 @@ function start_contrail() {
         screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh start"
 
 	if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it ifmap "cd $CONTRAIL_SRC/build/packages/ifmap-server; sudo java -jar ./irond.jar"
+            if is_ubuntu; then
+                screen_it ifmap "cd $CONTRAIL_SRC/build/packages/ifmap-server; java -jar ./irond.jar"
+            else
+                screen_it ifmap "cd $CONTRAIL_SRC/third_party/irond-0.3.0-bin; java -jar ./irond.jar"
+            fi
         else
             screen_it ifmap "cd /usr/share/ifmap-server; sudo java -jar ./irond.jar" 
         fi
@@ -925,14 +987,14 @@ function start_contrail() {
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it control "export LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         else
             screen_it control "export LD_LIBRARY_PATH=/usr/lib; sudo /usr/bin/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
 
         # collector/vizd
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/analytics/vizd"
+            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/production/analytics/vizd"
         else
             screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
         fi
@@ -1077,7 +1139,7 @@ function configure_contrail() {
     sudo chown -R `whoami` /etc/contrail
     sudo chmod  664 /etc/contrail/*
     sudo chown -R `whoami` /etc/sysconfig/network-scripts
-    sudo chmod  664 /etc/sysconfig/network-scripts/*
+    sudo chmod  ug+w /etc/sysconfig/network-scripts/*
     cd $TOP_DIR  
     
     #un-comment if required after review
@@ -1168,8 +1230,8 @@ function stop_contrail() {
                 sudo ifdown vhost0
                 
             else
-                sudo rm -f /etc/sysconfig/network-scripts/ifcfg-$dev
                 sudo rm -f /etc/sysconfig/network-scripts/ifcfg-vhost0
+                sudo service network restart 
             fi
         fi
     fi
@@ -1224,6 +1286,12 @@ interrupt() {
 OPTION=$1
 ARGS_COUNT=$#
 setup_root_access
+
+if is_fedora && [[ "$CONTRAIL_DEFAULT_INSTALL" != "False" ]]; then
+   echo_msg "only source installation of contrail in fedora is supported  exiting..."
+   exit 1
+fi
+
 if [ $ARGS_COUNT -eq 0 ];
 then 
     all_contrail
