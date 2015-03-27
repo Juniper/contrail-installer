@@ -858,9 +858,21 @@ function stop_contrail_services() {
     done
 }
 
+function restart_contrail() {
+    stop_contrail
+    start_contrail "do not reset"
+}
+
 function start_contrail() {
-    
-    mkdir -p $TOP_DIR/status/contrail/ 
+
+    # if $1 is set do not reset the config
+    if [ -z "$1" ]; then
+        RESET_CONFIG="--reset_config"
+    else
+        RESET_CONFIG=""
+    fi
+
+    mkdir -p $TOP_DIR/status/contrail/
     pid_count=`ls $TOP_DIR/status/contrail/*.pid|wc -l`
     if [[ $pid_count != 0 ]]; then
         echo "contrail is already running to restart use contrail.sh stop and contrail.sh start"
@@ -903,20 +915,20 @@ function start_contrail() {
             screen_it ifmap "cd /usr/share/ifmap-server; sudo java -jar ./irond.jar" 
         fi
         sleep 2
-    
-        screen_it disco "python $(pywhere discovery)/disc_server.py --reset_config --conf_file /etc/contrail/contrail-discovery.conf"
+
+        screen_it disco "python $(pywhere discovery)/disc_server.py $RESET_CONFIG --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
-        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf --reset_config --rabbit_password ${RABBIT_PASSWORD}"
+        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_password ${RABBIT_PASSWORD}"
         echo "Waiting for api-server to start..."
         if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= wget -q -O- http://${SERVICE_HOST}:8082; do sleep 1; done"; then
             echo "api-server did not start"
             exit 1
         fi
         sleep 2
-        screen_it schema "python $(pywhere schema_transformer)/to_bgp.py --reset_config --conf_file /etc/contrail/contrail-schema.conf"
-        screen_it svc-mon "/usr/bin/contrail-svc-monitor --reset_config --conf_file /etc/contrail/svc-monitor.conf"
+        screen_it schema "python $(pywhere schema_transformer)/to_bgp.py $RESET_CONFIG --conf_file /etc/contrail/contrail-schema.conf"
+        screen_it svc-mon "/usr/bin/contrail-svc-monitor $RESET_CONFIG --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
@@ -1226,7 +1238,7 @@ setup_root_access
 if [ $ARGS_COUNT -eq 0 ];
 then 
     all_contrail
-elif [ $ARGS_COUNT -eq 1 ] && [ "$OPTION" == "install" ] || [ "$OPTION" == "start" ] || [ "$OPTION" == "configure" ] || [ "$OPTION" == "clean" ] || [ "$OPTION" == "stop" ] || [ "$OPTION" == "build" ]; 
+elif [ $ARGS_COUNT -eq 1 ] && [ "$OPTION" == "install" ] || [ "$OPTION" == "start" ] || [ "$OPTION" == "configure" ] || [ "$OPTION" == "clean" ] || [ "$OPTION" == "stop" ] || [ "$OPTION" == "build" ] || [ "$OPTION" == "restart" ];
 then
     ${OPTION}_contrail
 else
@@ -1240,6 +1252,7 @@ else
     echo_msg "stop"
     echo_msg "configure"
     echo_msg "clean"
+    echo_msg "restart"
 
 fi
 # Fin
