@@ -1041,12 +1041,12 @@ function start_contrail() {
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         sudo sysctl -w net.ipv4.ip_forward=1
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            sudo $CONTRAIL_SRC/build/production/vrouter/utils/vif --create vgw --mac 00:01:00:5e:00:00
+            sudo $CONTRAIL_SRC/build/production/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
         else
-            sudo /usr/bin/vif --create vgw --mac 00:01:00:5e:00:00
+            sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
         fi            
-        sudo ifconfig vgw up
-        sudo route add -net $CONTRAIL_VGW_PUBLIC_SUBNET dev vgw
+        sudo ifconfig $CONTRAIL_VGW_INTERFACE up
+        sudo route add -net $CONTRAIL_VGW_PUBLIC_SUBNET dev $CONTRAIL_VGW_INTERFACE
     fi
     source /etc/contrail/contrail-compute.conf
     #sudo mkdir -p $(dirname $VROUTER_LOGFILE)
@@ -1248,10 +1248,10 @@ function stop_contrail() {
         fi
     fi
     if [ $CONTRAIL_VGW_PUBLIC_SUBNET ]; then
-        sudo route del -net $CONTRAIL_VGW_PUBLIC_SUBNET dev vgw
+        sudo route del -net $CONTRAIL_VGW_PUBLIC_SUBNET dev $CONTRAIL_VGW_INTERFACE
     fi
     if [ $CONTRAIL_VGW_INTERFACE ]; then
-        sudo tunctl -d vgw
+        sudo tunctl -d $CONTRAIL_VGW_INTERFACE
     fi
     # restore saved screen settings
     SCREEN_NAME=$SAVED_SCREEN_NAME
