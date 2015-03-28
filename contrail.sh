@@ -90,6 +90,10 @@ function setup_root_access {
     sudo chown root:root $TEMPFILE
     sudo mv $TEMPFILE /etc/sudoers.d/50_contrail_sh
 
+    grep -q `hostname` /etc/hosts ||
+        echo "127.0.0.1 `hostname`" | sudo tee -a /etc/hosts
+    grep -q `whoami` /etc/hosts ||
+        echo "127.0.0.1 `whoami`" | sudo tee -a /etc/hosts
 }
 
 # Draw a spinner so the user knows something is happening
@@ -597,7 +601,8 @@ function build_contrail() {
    
         if [[ $(read_stage) == "repo-init" ]]; then
             repo sync
-            [[ $? -ne 0 ]] && echo "repo sync failed" && exit
+            ret_val=$?
+            [[ $ret_val -ne 0 ]] && echo "repo sync failed" && exit $ret_val
             change_stage "repo-init" "repo-sync"
         fi
 
@@ -618,7 +623,7 @@ function build_contrail() {
             if [[ $(read_stage) == "fetch-packages" ]]; then
                 sudo scons $SCONS_ARGS
                 ret_val=$?
-                [[ $ret_val -ne 0 ]] && exit
+                [[ $ret_val -ne 0 ]] && exit $ret_val
                 change_stage "fetch-packages" "Build"
             fi
         elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
@@ -627,7 +632,7 @@ function build_contrail() {
                 sudo scons $SCONS_ARGS vrouter
                 sudo scons $SCONS_ARGS openstack/nova_contrail_vif
                 ret_val=$?
-                [[ $ret_val -ne 0 ]] && exit
+                [[ $ret_val -ne 0 ]] && exit $ret_val
                 change_stage "fetch-packages" "Build"          
             fi
         else
@@ -662,7 +667,7 @@ function install_contrail() {
             if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
                 sudo scons $SCONS_ARGS --root=/ install
                 ret_val=$?
-                [[ $ret_val -ne 0 ]] && exit
+                [[ $ret_val -ne 0 ]] && exit $ret_val
                 cd ${contrail_cwd}
 
                 # install contrail modules
@@ -748,7 +753,7 @@ function install_contrail() {
                 sudo scons $SCONS_ARGS --root=/ vrouter install
                 sudo scons $SCONS_ARGS --root=/ openstack/nova_contrail_vif install
                 ret_val=$?
-                [[ $ret_val -ne 0 ]] && exit
+                [[ $ret_val -ne 0 ]] && exit $ret_val
                 cd ${contrail_cwd}
 
                 # install contrail modules
