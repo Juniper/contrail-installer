@@ -65,7 +65,8 @@ CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
 CONTRAIL_DEFAULT_INSTALL=${CONTRAIL_DEFAULT_INSTALL:-True}
 
 NB_JOBS=$(($(grep -c processor /proc/cpuinfo)+1))
-SCONS_ARGS="-j$NB_JOBS --opt=production"
+#SCONS_ARGS="-j$NB_JOBS --opt=production"
+SCONS_ARGS="--opt=production"
 
 if [[ "$RECLONE" == "True" ]]; then
     echo "Recloning the contrail again"
