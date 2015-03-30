@@ -834,7 +834,7 @@ function insert_vrouter() {
         vrouter_pkg_version=${vrouter_pkg_version#* (*}
         vrouter_pkg_version=${vrouter_pkg_version%*)*}        
         sudo sh -c 'sync && echo 3 > /proc/sys/vm/drop_caches'
-        sudo insmod /var/lib/dkms/vrouter/$vrouter_pkg_version/build/$kmod vr_flow_entries=4096 vr_oflow_entries=512
+        sudo insmod /var/lib/dkms/vrouter/$vrouter_pkg_version/build/$kmod vr_flow_entries=4096 vr_oflow_entries=512 vr_bridge_entries=128
         if [[ $? -eq 1 ]] ; then 
             exit 1
         fi
