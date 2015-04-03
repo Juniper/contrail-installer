@@ -72,6 +72,12 @@ if [[ "$RECLONE" == "True" ]]; then
     echo "Recloning the contrail again"
     sudo rm .stage.txt
 fi
+function generate_env {
+    local srvcnt=$(echo $ENABLED_SERVICES | tr -cd , | wc -c)
+    srvcnt=$((srvcnt+1))
+    echo "NUM_ENABLED_SERVICES=$srvcnt" > taskrc
+}
+
 #Setup root access with sudoers
 function setup_root_access {
     # We're not **root**, make sure ``sudo`` is available
@@ -1304,6 +1310,7 @@ interrupt() {
 OPTION=$1
 ARGS_COUNT=$#
 setup_root_access
+generate_env
 
 if is_fedora && [[ "$CONTRAIL_DEFAULT_INSTALL" != "False" ]]; then
    echo_msg "only source installation of contrail in fedora is supported  exiting..."
