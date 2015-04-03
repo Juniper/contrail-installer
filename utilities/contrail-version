@@ -1,0 +1,10 @@
+#! /bin/sh
+# make a fake contrail-version when contrail isn't installed by yum
+cat <<EOF
+Package                                Version                 Build-ID | Repo | RPM Name
+-------------------------------------- ----------------------- ----------------------------------
+contrail-config                        3.0-3000            2565                                    
+contrail-analytics                     1-1304082216        148                                    
+openstack-dashboard.noarch             2012.1.3-1.fc17     updates                                
+contrail-agent                         1-1304091654        contrail-agent-1-1304091654.x86_64     
+EOF

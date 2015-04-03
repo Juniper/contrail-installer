@@ -944,6 +944,9 @@ function start_contrail() {
         echo "contrail is already running to restart use contrail.sh stop and contrail.sh start"
         exit 
     fi
+
+    mkdir -p $TOP_DIR/bin
+    export PATH=$TOP_DIR/bin:$TOP_DIR/utilities:$PATH
  
     #to overwrite the PROMPT_COMMAND lines for screens
     sudo sed -i'' '27,28 s/^/#/' /etc/bashrc
@@ -1062,22 +1065,6 @@ function start_contrail() {
     fi
     source /etc/contrail/contrail-compute.conf
     #sudo mkdir -p $(dirname $VROUTER_LOGFILE)
-    mkdir -p $TOP_DIR/bin
-    
-    # make a fake contrail-version when contrail isn't installed by yum
-    if ! contrail-version >/dev/null 2>&1; then
-	cat >$TOP_DIR/bin/contrail-version <<EOF2
-#! /bin/sh
-cat <<EOF
-Package                                Version                 Build-ID | Repo | RPM Name
--------------------------------------- ----------------------- ----------------------------------
-contrail-analytics                     1-1304082216        148                                    
-openstack-dashboard.noarch             2012.1.3-1.fc17     updates                                
-contrail-agent                         1-1304091654        contrail-agent-1-1304091654.x86_64     
-EOF
-EOF2
-    fi
-    chmod a+x $TOP_DIR/bin/contrail-version
     
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
         cat > $TOP_DIR/bin/vnsw.hlpr <<END
