@@ -1,4 +1,5 @@
 HOST_IP=
+APISERVER_IP=
 
 STACK_DIR=$(cd $(dirname $0) && pwd)
 
