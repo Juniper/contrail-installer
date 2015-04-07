@@ -152,6 +152,8 @@ function replace_svc_monitor_conf()
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     check_replace_value $file DEFAULTS ifmap_username 'svc_monitor'
     check_replace_value $file DEFAULTS ifmap_password 'svc_monitor'
+    check_replace_value $file DEFAULTS rabbit_user $RABBIT_USER
+    check_replace_value $file DEFAULTS rabbit_password $RABBIT_PASSWORD
     check_replace_value $file SECURITY ca_certs '/etc/contrail/ssl/certs/ca.pem'
     check_replace_value $file SECURITY certfile '/etc/contrail/ssl/certs/svc_monitor.pem'
     check_replace_value $file SECURITY keyfile '/etc/contrail/ssl/private_keys/svc_monitor_key.pem'
