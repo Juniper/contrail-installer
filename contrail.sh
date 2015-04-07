@@ -64,6 +64,8 @@ DISCOVERY_IP=${DISCOVERY_IP:-$CFGM_IP}
 CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
 CONTRAIL_DEFAULT_INSTALL=${CONTRAIL_DEFAULT_INSTALL:-True}
 
+RABBIT_USER=${RABBIT_USER:-guest}
+
 NB_JOBS=$(($(grep -c processor /proc/cpuinfo)+1))
 #SCONS_ARGS="-j$NB_JOBS --opt=production"
 SCONS_ARGS="--opt=production"
@@ -747,7 +749,7 @@ function install_contrail() {
             fi
             # get cassandra
             download_cassandra
-            sudo rabbitmqctl change_password guest $RABBIT_PASSWORD
+            sudo rabbitmqctl change_password $RABBIT_USER $RABBIT_PASSWORD
             sudo rabbitmqctl set_vm_memory_high_watermark 0.2
             download_zookeeper
             change_stage "Build" "install"
@@ -999,7 +1001,7 @@ function start_contrail() {
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
-        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_password ${RABBIT_PASSWORD}"
+        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD}"
         echo "Waiting for api-server to start..."
         if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= wget -q -O- http://${SERVICE_HOST}:8082; do sleep 1; done"; then
             echo "api-server did not start"
