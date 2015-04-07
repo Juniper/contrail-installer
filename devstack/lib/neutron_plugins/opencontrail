@@ -26,9 +26,9 @@ function neutron_plugin_configure_common() {
     local APISERVER_PORT=${APISERVER_PORT:-8082}
     local APISERVER_IP=${APISERVER_IP:-localhost}
 
-    iniset $NEUTRON_PLUGIN_CONF apiserver multi_tenancy $MULTI_TENANCY
-    iniset $NEUTRON_PLUGIN_CONF apiserver api_server_port $APISERVER_PORT
-    iniset $NEUTRON_PLUGIN_CONF apiserver api_server_ip $APISERVER_IP
+    iniset $NEUTRON_PLUGIN_CONF CONTRAIL multi_tenancy $MULTI_TENANCY
+    iniset $NEUTRON_PLUGIN_CONF CONTRAIL api_server_port $APISERVER_PORT
+    iniset $NEUTRON_PLUGIN_CONF CONTRAIL api_server_ip $APISERVER_IP
 }
 
 function neutron_plugin_configure_service() {
