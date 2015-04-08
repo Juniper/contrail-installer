@@ -1055,7 +1055,7 @@ function start_contrail() {
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         sudo sysctl -w net.ipv4.ip_forward=1
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            sudo $CONTRAIL_SRC/build/production/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
+            sudo $CONTRAIL_SRC/build/production/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
         else
             sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
         fi            
