@@ -628,6 +628,7 @@ function build_contrail() {
 
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             if [[ $(read_stage) == "fetch-packages" ]]; then
+                git checkout $CONTRAIL_BRANCH
                 sudo scons $SCONS_ARGS
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit $ret_val
