@@ -66,9 +66,13 @@ CONTRAIL_DEFAULT_INSTALL=${CONTRAIL_DEFAULT_INSTALL:-True}
 
 RABBIT_USER=${RABBIT_USER:-guest}
 
-NB_JOBS=$(($(grep -c processor /proc/cpuinfo)+1))
-#SCONS_ARGS="-j$NB_JOBS --opt=production"
-SCONS_ARGS="--opt=production"
+TARGET=${$TARGET:-production}
+SCONS_ARGS="--opt=$TARGET"
+
+NB_JOBS=${$NB_JOBS:-1}
+if [ $NB_JOBS -gt 1 ]; then
+    SCONS_ARGS="-j$NB_JOBS $SCONS_ARGS"
+fi
 
 if [[ "$RECLONE" == "True" ]]; then
     echo "Recloning the contrail again"
@@ -681,7 +685,7 @@ function install_contrail() {
 
                 # install contrail modules
                 echo "Installing contrail modules"
-                pip_install --upgrade $(find $CONTRAIL_SRC/build/production -name "*.tar.gz" -print)
+                pip_install --upgrade $(find $CONTRAIL_SRC/build/$TARGET -name "*.tar.gz" -print)
 
                 # install VIF driver
                 pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
@@ -767,7 +771,7 @@ function install_contrail() {
 
                 # install contrail modules
                 echo "Installing contrail modules"
-                pip_install --upgrade $(find $CONTRAIL_SRC/build/production -name "*.tar.gz" -print)
+                pip_install --upgrade $(find $CONTRAIL_SRC/build/$TARGET -name "*.tar.gz" -print)
 
                 # install VIF driver
                 pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
@@ -836,7 +840,7 @@ function insert_vrouter() {
             exit 1
         fi
         echo "Creating vhost interface: $DEVICE."
-        VIF=$CONTRAIL_SRC/build/production/vrouter/utils/vif
+        VIF=$CONTRAIL_SRC/build/$TARGET/vrouter/utils/vif
     else    
         vrouter_pkg_version=$(zless /usr/share/doc/contrail-vrouter-agent/changelog.gz )
         vrouter_pkg_version=${vrouter_pkg_version#* (*}
@@ -1013,14 +1017,14 @@ function start_contrail() {
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it control "export LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/lib; sudo $CONTRAIL_SRC/build/production/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
+            screen_it control "export LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/lib; sudo $CONTRAIL_SRC/build/$TARGET/control-node/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         else
             screen_it control "export LD_LIBRARY_PATH=/usr/lib; sudo /usr/bin/contrail-control --conf_file /etc/contrail/contrail-control.conf ${CERT_OPTS} ${LOG_LOCAL}"
         fi
 
         # collector/vizd
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/production/analytics/vizd"
+            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/$TARGET/analytics/vizd"
         else
             screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
         fi
@@ -1032,7 +1036,7 @@ function start_contrail() {
 
         #qed_param
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
-            screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
+            screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/$TARGET/query_engine/qed"
         else
             screen_it query-engine "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine"
         fi
@@ -1055,7 +1059,7 @@ function start_contrail() {
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         sudo sysctl -w net.ipv4.ip_forward=1
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            sudo $CONTRAIL_SRC/build/production/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
+            sudo $CONTRAIL_SRC/build/$TARGET/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
         else
             sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
         fi            
@@ -1085,7 +1089,7 @@ EOF2
         cat > $TOP_DIR/bin/vnsw.hlpr <<END
 #! /bin/bash
 PATH=$TOP_DIR/bin:$PATH
-LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/vnsw/agent/contrail/contrail-vrouter-agent --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
+LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/$TARGET/vnsw/agent/contrail/contrail-vrouter-agent --config_file=/etc/contrail/contrail-vrouter-agent.conf --DEFAULT.log_file=/var/log/vrouter.log 
 END
   
     else

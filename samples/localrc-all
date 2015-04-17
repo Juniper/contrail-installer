@@ -22,10 +22,10 @@ LOG_LEVEL=3
 
 SERVICE_TIMEOUT=90
 SERVICE_HOST=localhost
-INSTALL_PROFILE=ALL 
+INSTALL_PROFILE=ALL
 PHYSICAL_INTERFACE=eth0
 
-# to get source code make it as False 
+# to get source code make it as False
 CONTRAIL_DEFAULT_INSTALL=False
 
 # to get the ppa packages uncomment
@@ -40,3 +40,8 @@ GIT_BASE=https://github.com
 CASS_MAX_HEAP_SIZE=500M
 CASS_HEAP_NEWSIZE=100M
 
+# number of jobs used to build
+# NB_JOBS=1
+
+# target of the build debug/production
+# TARGET=production
