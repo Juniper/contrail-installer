@@ -709,10 +709,8 @@ function install_contrail() {
  
                 contrail_cwd=$(pwd)
     		cd $CONTRAIL_SRC
-    		python contrail-webui-third-party/fetch_packages.py
     		sed -ie "s/config\.discoveryService\.enable.*$/config\.discoveryService\.enable = false;/" contrail-web-core/config/config.global.js
-    		sed -ie "s/config\.featurePkg\.webController\.path.*$/config\.featurePkg\.webController\.path = '$CONTRAIL_SRC\/contrail-web-controller';/" contrail-web-core/config/config.global.js
-    		sed -ie "s/config\.core_path.*$/config\.core_path = '$CONTRAIL_SRC\/contrail-web-core';/" contrail-web-controller/webroot/common/js/controller.config.global.js
+    		sed -ie "s:config\.featurePkg\.webController\.path.*$:config\.featurePkg\.webController\.path = '$CONTRAIL_SRC/contrail-web-controller';:" contrail-web-core/config/config.global.js
     		cd contrail-web-core
     		make fetch-pkgs-prod
     		make dev-env REPO=webController
