@@ -54,6 +54,7 @@ Contrail.sh is the main script that supports following options:
     configure ... to Configure & Provision 
     start     ... to Start OpenContrail Modules
     stop      ... to Stop OpenContrail Modules
+    restart   ... to Restart OpenContrail Modules without resetting data
 
 # Launcing OpenContrail
 
