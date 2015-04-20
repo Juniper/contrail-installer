@@ -1020,7 +1020,7 @@ function start_contrail() {
 
         # collector/vizd
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it collector "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/production/analytics/vizd"
+            screen_it collector "sudo LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/production/analytics/vizd"
         else
             screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
         fi
@@ -1032,7 +1032,7 @@ function start_contrail() {
 
         #qed_param
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then  
-            screen_it query-engine "sudo PATH=$PATH:$TOP_DIR/bin LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
+            screen_it query-engine "sudo LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib $CONTRAIL_SRC/build/production/query_engine/qed"
         else
             screen_it query-engine "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-query-engine"
         fi
