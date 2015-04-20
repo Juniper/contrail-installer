@@ -399,10 +399,12 @@ function download_python_dependencies {
     pip_install -U oslo.rootwrap
 
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
-        pip_install pycassa stevedore xmltodict python-keystoneclient
+        pip_install pycassa stevedore xmltodict
         pip_install kazoo pyinotify
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
             pip_install stevedore==1.0.0.0a1
+        else
+            pip_install python-keystoneclient
         fi 
     fi
 
