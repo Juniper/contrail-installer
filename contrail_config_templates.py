@@ -88,6 +88,7 @@ disc_server_ip=$__contrail_disc_server_ip__
 disc_server_port=$__contrail_disc_server_port__
 rabbit_user=$__contrail_rabbit_user__
 rabbit_password=$__contrail_rabbit_password__
+cluster_id=$__contrail_cluster_id__
 
 [SECURITY]
 use_certs=$__contrail_use_certs__
