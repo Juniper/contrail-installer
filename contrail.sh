@@ -311,7 +311,10 @@ function download_dependencies {
             apt_get install libipfix
             apt_get install python-docker-py
         fi	
-        apt_get install python-neutron
+        # comment out install of python-neutron as python-keystone client it brings seem to be 
+        # conflicting with devstack later. Why is python-neutron needed, specially for source
+        # build. Perhaps revisit the requirement for binary build (dsetia 4/21/2015)
+        # apt_get install python-neutron
         if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install software-properties-common
             apt_get install libboost-dev libboost-chrono-dev libboost-date-time-dev
