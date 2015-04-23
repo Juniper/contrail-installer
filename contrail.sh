@@ -311,9 +311,7 @@ function download_dependencies {
             apt_get install libipfix
             apt_get install python-docker-py
         fi	
-        # comment out install of python-neutron as python-keystone client it brings seem to be 
-        # conflicting with devstack later. Why is python-neutron needed, specially for source
-        # build. Perhaps revisit the requirement for binary build (dsetia 4/21/2015)
+        # neutron (python-neutron) needed by contrail neutron plugin. 
         apt_get install python-neutron
         if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install software-properties-common
@@ -406,8 +404,10 @@ function download_python_dependencies {
         pip_install kazoo pyinotify
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then    
             pip_install stevedore==1.0.0.0a1
-        else
-            pip_install python-keystoneclient
+            # version installed by default (0.7.1 at the moment is discarded by oslo when installing
+            # devstack. Oslo installs way newer version (1.4.0 at the moment) which is rejected by glance.
+            # this seems to be good compromise, I hope
+            pip_install python-keystoneclient==0.10.0
         fi 
     fi
 
