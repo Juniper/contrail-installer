@@ -407,7 +407,7 @@ function download_python_dependencies {
             # version installed by default (0.7.1 at the moment is discarded by oslo when installing
             # devstack. Oslo installs way newer version (1.4.0 at the moment) which is rejected by glance.
             # this seems to be good compromise, I hope
-            pip_install python-keystoneclient==0.10.0
+            pip_install python-keystoneclient==0.11.2
         fi 
     fi
 
