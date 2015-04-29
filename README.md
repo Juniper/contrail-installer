@@ -28,7 +28,6 @@ Best to start with a sample localrc.
 
 CONTRAIL_DEFAULT_INSTALL - Set this to True for installation from OpenContrail binary
 packages. When set to False, trunk OpenContrail bits will be downloaded and compiled. 
-Default is to use OpenContrail binary packages (released version or snapshots).
 
 LAUNCHPAD_BRANCH=PPA - Applicable only when CONTRAIL_DEFAULT_INSTALL is set to True.
 It specifies to use released binary packages for installation. Default is to use 
