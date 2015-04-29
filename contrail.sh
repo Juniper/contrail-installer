@@ -239,17 +239,8 @@ function download_redis {
     echo "Downloading dependencies"
     if is_ubuntu; then
         if ! which redis-server > /dev/null 2>&1 ; then
-            if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-                sudo apt-get install libjemalloc1
-                contrail_cwd=$(pwd)
-                cd $CONTRAIL_SRC/third_party
-                sudo dpkg -i redis-server_2.6.13-1_amd64.deb
-                rm -rf redis-server_2.6.13-1_amd64.deb
-                # service will be started later
-                sudo service redis-server stop
-                cd ${contrail_cwd}
-            fi
-
+            sudo apt-get install redis-server
+            sudo service redis-server stop
         fi
     else
         if ! which redis-server > /dev/null 2>&1 ; then

@@ -15,12 +15,6 @@
                   download and copy to currect directory is complete.
   -->
   <package>
-    <name>redis-server</name>
-    <url>http://us.archive.ubuntu.com/ubuntu/pool/universe/r/redis/redis-server_2.6.13-1_amd64.deb</url>
-    <format>file</format>
-    <md5>b860b9cb5558ca6bac3e70547766db59</md5>
-  </package>
-  <package>
     <name>zookeeper</name>
     <url>http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-3.4.6.tar.gz</url>
     <format>tgz</format>
