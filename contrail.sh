@@ -71,7 +71,7 @@ RABBIT_USER=${RABBIT_USER:-guest}
 TARGET=${TARGET:-production}
 SCONS_ARGS="--opt=$TARGET"
 
-NB_JOBS=${$NB_JOBS:-1}
+NB_JOBS=${NB_JOBS:-1}
 if [ $NB_JOBS -gt 1 ]; then
     SCONS_ARGS="-j$NB_JOBS $SCONS_ARGS"
 fi
