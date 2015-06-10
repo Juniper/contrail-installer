@@ -91,7 +91,7 @@ function value_check()
 }
 function check_start_status()
 {   
-    source $CONTRAIL_DIR/taskrc`:w
+    source $CONTRAIL_DIR/taskrc
     if [[ -d $CONTRAIL_DIR/status/contrail ]] ; then
         enabled_services_count=$NUM_ENABLED_SERVICES
         pid_count=`ls $CONTRAIL_DIR/status/contrail/*.pid|wc -l`
