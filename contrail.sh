@@ -247,7 +247,7 @@ function download_redis {
     echo "Downloading dependencies"
     if is_ubuntu; then
         if ! which redis-server > /dev/null 2>&1 ; then
-            sudo apt-get install redis-server
+            sudo apt-get -y install redis-server
             sudo service redis-server stop
         fi
     else
