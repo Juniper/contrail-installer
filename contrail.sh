@@ -1099,17 +1099,18 @@ END
         PROV_MS_PATH="$CONTRAIL_SRC/controller/src/config/utils"
     else
         PROV_MS_PATH="/usr/share/contrail-utils"
-     fi
-    python $PROV_MS_PATH/provision_linklocal.py \
-        --linklocal_service_name metadata \
-        --linklocal_service_ip 169.254.169.254 \
-        --linklocal_service_port 80 \
-        --ipfabric_service_ip $Q_META_DATA_IP \
-        --ipfabric_service_port 8775 \
-        --oper add
+    fi
 
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
-        screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
+        python $PROV_MS_PATH/provision_linklocal.py \
+            --linklocal_service_name metadata \
+	    --linklocal_service_ip 169.254.169.254 \
+	    --linklocal_service_port 80 \
+	    --ipfabric_service_ip $Q_META_DATA_IP \
+	    --ipfabric_service_port 8775 \
+	    --oper add
+
+	screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
 
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
             screen_it ui-jobs "cd $CONTRAIL_SRC/contrail-web-core; sudo node jobServerStart.js"
