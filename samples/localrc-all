@@ -45,6 +45,3 @@ CASS_HEAP_NEWSIZE=100M
 
 # target of the build debug/production
 # TARGET=production
-
-# specify the keyspace used by the svc monitor
-# SVC_CLUSTER_ID=SVC
