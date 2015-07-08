@@ -17,7 +17,7 @@ function replace_api_server_conf()
     else
         port=8443
     fi
-    check_replace_value $file DEFAULTS ifmap_server_ip $CFGM_IP
+    check_replace_value $file DEFAULTS ifmap_server_ip $IFMAP_IP
     check_replace_value $file DEFAULTS ifmap_server_port $port
     check_replace_value $file DEFAULTS multi_tenancy $MULTI_TENANCY
     check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
@@ -286,7 +286,7 @@ function replace_contrail_control_conf()
     if [[ $COLLECTOR_IP = "localhost" ]]; then
         COLLECTOR_IP="127.0.0.1"
     fi
-    check_replace_value $file  IFMAP server_url https://$CONTROL_IP:$port
+    check_replace_value $file  IFMAP server_url https://$IFMAP_IP:$port
     check_replace_value $file  IFMAP user $CONTROL_IP
     check_replace_value $file  IFMAP password $CONTROL_IP
     check_replace_value $file  DISCOVERY server $DISCOVERY_IP
@@ -319,7 +319,7 @@ function replace_dns_conf()
     else
         port=8443
     fi
-    check_replace_value $file  ""  IFMAP_SERVER $CFGM_IP
+    check_replace_value $file  ""  IFMAP_SERVER $IFMAP_IP
     check_replace_value $file  ""  IFMAP_PORT $port
     check_replace_value $file  ""  IFMAP_USER $CONTROL_IP".dns"
     check_replace_value $file  ""  IFMAP_PASWD $CONTROL_IP".dns"
