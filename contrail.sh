@@ -55,6 +55,7 @@ fi
 USE_CERTS=${USE_CERTS:-false}
 MULTI_TENANCY=${MULTI_TENANCY:-false}
 PUPPET_SERVER=${PUPPET_SERVER:-''}
+CASSANDRA_IP=${CASSANDRA_IP:-'localhost'}
 CASSANDRA_IP_LIST=${CASSANDRA_IP_LIST:-127.0.0.1}
 COLLECTOR_IP_LIST=${COLLECTOR_IP_LIST:-$CFGM_IP}
 
@@ -1174,6 +1175,7 @@ function configure_contrail() {
 
     #invoke functions to change the files
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
+        replace_cassandra_conf
         replace_api_server_conf
         replace_contrail_plugin_conf
         replace_contrail_schema_conf

@@ -1,6 +1,15 @@
 	
 source functions
 
+function replace_cassandra_conf()
+{
+    if [ ! -z "$CASSANDRA_IP" ]
+    then
+        sudo sed -i -e 's/listen_address:.*/listen_address:'$CASSANDRA_IP'/' /etc/cassandra/cassandra.yaml
+        sudo sed -i -e 's/rpc_address:.*/rpc_address:'$CASSANDRA_IP'/' /etc/cassandra/cassandra.yaml
+    fi
+}
+
 
 function replace_api_server_conf()
 {
