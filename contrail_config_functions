@@ -193,7 +193,7 @@ function replace_discovery_conf()
     do
         cassandra_server=${cassandra_server}""$ip":9160 " 
     done
-   
+
     check_replace_value $file DEFAULTS listen_ip_addr $CFGM_IP
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
         check_replace_value $file DEFAULTS zk_server_ip '127.0.0.1'
@@ -201,8 +201,10 @@ function replace_discovery_conf()
         check_replace_value $file DEFAULTS listen_port 5998
         check_replace_value $file DEFAULTS log_local 'True'
         check_replace_value $file DEFAULTS log_file '/var/log/contrail/discovery.log'
-        check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     fi
+
+     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server
+
     # minimim time to allow client to cache service information (seconds)
     #check_replace_value $file DEFAULTS ttl_min 300
     
