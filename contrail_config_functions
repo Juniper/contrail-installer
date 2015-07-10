@@ -312,6 +312,36 @@ function replace_contrail_control_conf()
     fi
 }
 
+function replace_contrail_collector_conf()
+{
+    file="/etc/contrail/contrail-collector.conf"
+
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}""$ip":9160 "
+    done
+    if [[ $COLLECTOR_IP = "localhost" ]]; then
+        COLLECTOR_IP="127.0.0.1"
+    fi
+
+    check_replace_value $file DEFAULTS log_file '/var/log/contrail/contrail-collector.log'
+    check_replace_value $file DEFAULTS log_local 1
+    check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server
+    check_replace_value $file DEFAULTS hostip $COLLECTOR_IP
+    check_replace_value $file DEFAULTS hostname `hostname`
+    check_replace_value $file DISCOVERY server $DISCOVERY_IP
+}
+
+function replace_contrail_analytics_api_conf()
+{
+    file="/etc/contrail/contrail-analytics-api.conf"
+
+    check_replace_value $file DEFAULTS log_file '/var/log/contrail/contrail-analytics-api.log'
+    check_replace_value $file DISCOVERY server $DISCOVERY_IP
+    check_replace_value $file DISCOVERY port 5998
+}
+
 function replace_dns_conf()
 {
     file="/etc/contrail/dns.conf"

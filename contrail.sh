@@ -1184,6 +1184,8 @@ function configure_contrail() {
         replace_vnc_api_lib_conf
         replace_ContrailPlugin_conf
         replace_contrail_control_conf
+        replace_contrail_collector_conf
+        replace_contrail_analytics_api_conf
         replace_dns_conf
         replace_irond_basic_auth_users
     fi	        
