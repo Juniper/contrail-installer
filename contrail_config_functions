@@ -297,7 +297,12 @@ function replace_contrail_control_conf()
     if [[ $COLLECTOR_IP = "localhost" ]]; then
         COLLECTOR_IP="127.0.0.1"
     fi
-    check_replace_value $file  IFMAP server_url https://$IFMAP_IP:$port
+
+    if [ $USE_DISCOVERY = "False" ]; then
+        check_replace_value $file  IFMAP server_url https://$IFMAP_IP:$port
+    else
+        inicomment $file IFMAP server_url
+    fi
     check_replace_value $file  IFMAP user $CONTROL_IP
     check_replace_value $file  IFMAP password $CONTROL_IP
     check_replace_value $file  DISCOVERY server $DISCOVERY_IP
@@ -625,10 +630,14 @@ function replace_contrail_vrouter_agent_conf()
     ncontrols=2		
     collector_ip=$CFGM_IP
     gateway=$(find_gateway $PHYSICAL_INTERFACE)
-    collector_port=8080 
-     
-    check_replace_value $file CONTROL-NODE server $CFGM_IP  
-    check_replace_value $file  NETWORKS control_network_ip $CFGM_IP  
+    collector_port=8080
+
+    if [ $USE_DISCOVERY = "False" ]; then
+       check_replace_value $file CONTROL-NODE server $CFGM_IP
+    else
+       inicomment $file CONTROL-NODE server
+    fi
+    check_replace_value $file  NETWORKS control_network_ip $CFGM_IP
     check_replace_value $file  VIRTUAL-HOST-INTERFACE ip $cidr
     check_replace_value $file  VIRTUAL-HOST-INTERFACE name vhost0 
     check_replace_value $file  VIRTUAL-HOST-INTERFACE gateway $gateway
