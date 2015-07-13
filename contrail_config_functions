@@ -626,11 +626,7 @@ function replace_contrail_vrouter_agent_conf()
     file="/etc/contrail/contrail-vrouter-agent.conf"
     
     cidr=$(get_management_ip $PHYSICAL_INTERFACE)/24
-    discovery_ip=$CFGM_IP
-    ncontrols=2		
-    collector_ip=$CFGM_IP
     gateway=$(find_gateway $PHYSICAL_INTERFACE)
-    collector_port=8080
 
     if [ $USE_DISCOVERY = "False" ]; then
        check_replace_value $file CONTROL-NODE server $CFGM_IP
@@ -642,9 +638,9 @@ function replace_contrail_vrouter_agent_conf()
     check_replace_value $file  VIRTUAL-HOST-INTERFACE name vhost0 
     check_replace_value $file  VIRTUAL-HOST-INTERFACE gateway $gateway
     check_replace_value $file  VIRTUAL-HOST-INTERFACE physical_interface $PHYSICAL_INTERFACE
-    check_replace_value $file  COLLECTOR port $collector_port
-    check_replace_value $file  COLLECTOR server $collector_ip
-    check_replace_value $file  DISCOVERY server $CFGM_IP
+    check_replace_value $file  COLLECTOR port 8080
+    check_replace_value $file  COLLECTOR server $CFGM_IP
+    check_replace_value $file  DISCOVERY server $DISCOVERY_IP
 
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         check_replace_value $file  GATEWAY-0 interface $CONTRAIL_VGW_INTERFACE
