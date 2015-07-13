@@ -343,6 +343,8 @@ function replace_contrail_analytics_api_conf()
     file="/etc/contrail/contrail-analytics-api.conf"
 
     check_replace_value $file DEFAULTS log_file '/var/log/contrail/contrail-analytics-api.log'
+    check_replace_value $file DEFAULTS hostip $COLLECTOR_IP
+
     check_replace_value $file DISCOVERY server $DISCOVERY_IP
     check_replace_value $file DISCOVERY port 5998
 }
