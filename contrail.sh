@@ -1161,7 +1161,8 @@ function configure_contrail() {
     sudo mkdir -p /etc/contrail
     sudo mkdir -p /etc/sysconfig/network-scripts    
     sudo chown -R `whoami` /etc/contrail
-    sudo chmod  664 /etc/contrail/*
+    sudo find /etc/contrail -type f -exec chmod 664 {} \;
+    sudo find /etc/contrail -type d -exec chmod 775 {} \;
     sudo chown -R `whoami` /etc/sysconfig/network-scripts
     sudo chmod  ug+w /etc/sysconfig/network-scripts/*
     cd $TOP_DIR  
