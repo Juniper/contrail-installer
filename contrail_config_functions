@@ -330,11 +330,11 @@ function replace_contrail_collector_conf()
         COLLECTOR_IP="127.0.0.1"
     fi
 
-    check_replace_value $file DEFAULTS log_file '/var/log/contrail/contrail-collector.log'
-    check_replace_value $file DEFAULTS log_local 1
-    check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server
-    check_replace_value $file DEFAULTS hostip $COLLECTOR_IP
-    check_replace_value $file DEFAULTS hostname `hostname`
+    check_replace_value $file DEFAULT log_file '/var/log/contrail/contrail-collector.log'
+    check_replace_value $file DEFAULT log_local 1
+    check_replace_value $file DEFAULT cassandra_server_list $cassandra_server
+    check_replace_value $file DEFAULT hostip $COLLECTOR_IP
+    check_replace_value $file DEFAULT hostname `hostname`
     check_replace_value $file DISCOVERY server $DISCOVERY_IP
 }
 
