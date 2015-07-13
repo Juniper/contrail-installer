@@ -20,6 +20,12 @@ function replace_api_server_conf()
     do
         cassandra_server=${cassandra_server}""$ip":9160 " 
     done
+    zookeeper_server=""
+    for ip in ${ZOOKEEPER_IP_LIST[@]};
+    do
+        zookeeper_server=${zookeeper_server}""$ip","
+    done
+    zookeeper_server=${zookeeper_server::-1}
     port=0
     if $USE_CERTS ; then
         port=8444 
@@ -31,6 +37,8 @@ function replace_api_server_conf()
     check_replace_value $file DEFAULTS multi_tenancy $MULTI_TENANCY
     check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
+    check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
+    check_replace_value $file DEFAULTS zk_server_port 2181
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
         check_replace_value $file DEFAULTS ifmap_username 'api-server'
         check_replace_value $file DEFAULTS ifmap_password 'api-server'
@@ -106,6 +114,12 @@ function replace_contrail_schema_conf()
     do
         cassandra_server=${cassandra_server}""$ip":9160 " 
     done
+    zookeeper_server=""
+    for ip in ${ZOOKEEPER_IP_LIST[@]};
+    do
+        zookeeper_server=${zookeeper_server}""$ip","
+    done
+    zookeeper_server=${zookeeper_server::-1}
     port=0
     if $USE_CERTS ; then
         port=8444 
@@ -117,12 +131,12 @@ function replace_contrail_schema_conf()
     check_replace_value $file DEFAULTS api_server_ip $CFGM_IP
     check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
+    check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
+    check_replace_value $file DEFAULTS zk_server_port 2181
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
         check_replace_value $file DEFAULTS ifmap_username 'schema-transformer'
         check_replace_value $file DEFAULTS ifmap_password 'schema-transformer'
         check_replace_value $file DEFAULTS api_server_port 8082
-        check_replace_value $file DEFAULTS zk_server_ip '127.0.0.1'
-        check_replace_value $file DEFAULTS zk_server_port 2181
         check_replace_value $file DEFAULTS log_file '/var/log/contrail/schema.log'
         check_replace_value $file DEFAULTS disc_server_port 5998
     fi 
@@ -146,8 +160,14 @@ function replace_svc_monitor_conf()
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
     do
-        cassandra_server=${cassandra_server}""$ip":9160 " 
+        cassandra_server=${cassandra_server}""$ip":9160 "
     done
+    zookeeper_server=""
+    for ip in ${ZOOKEEPER_IP_LIST[@]};
+    do
+        zookeeper_server=${zookeeper_server}""$ip","
+    done
+    zookeeper_server=${zookeeper_server::-1}
     port=0
     if $USE_CERTS ; then
         port=8444 
@@ -159,6 +179,8 @@ function replace_svc_monitor_conf()
     check_replace_value $file DEFAULTS api_server_ip $CFGM_IP
     check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
+    check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
+    check_replace_value $file DEFAULTS zk_server_port 2181
     check_replace_value $file DEFAULTS ifmap_username 'svc_monitor'
     check_replace_value $file DEFAULTS ifmap_password 'svc_monitor'
     check_replace_value $file DEFAULTS rabbit_user $RABBIT_USER
@@ -170,8 +192,6 @@ function replace_svc_monitor_conf()
         check_replace_value $file DEFAULTS ifmap_username 'svc-monitor'
         check_replace_value $file DEFAULTS ifmap_password 'svc-monitor'
         check_replace_value $file DEFAULTS api_server_port 8082
-        check_replace_value $file DEFAULTS zk_server_ip '127.0.0.1'
-        check_replace_value $file DEFAULTS zk_server_port 2181
         check_replace_value $file DEFAULTS log_file '/var/log/contrail/svc-monitor.log'
         check_replace_value $file DEFAULTS disc_server_port 5998
     fi
