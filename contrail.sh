@@ -995,19 +995,19 @@ function start_contrail() {
         fi
         sleep 2
 
-        screen_it disco "python $(pywhere discovery)/disc_server.py $RESET_CONFIG --conf_file /etc/contrail/contrail-discovery.conf"
+        screen_it disco "$(which contrail-discovery) $RESET_CONFIG --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
-        screen_it apiSrv "python $(pywhere vnc_cfg_api_server)/vnc_cfg_api_server.py --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD}"
+        screen_it apiSrv "$(which contrail-api) --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD}"
         echo "Waiting for api-server to start..."
         if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= wget -q -O- http://${SERVICE_HOST}:8082; do sleep 1; done"; then
             echo "api-server did not start"
             exit 1
         fi
         sleep 2
-        screen_it schema "python $(pywhere schema_transformer)/to_bgp.py $RESET_CONFIG --conf_file /etc/contrail/contrail-schema.conf"
-        screen_it svc-mon "/usr/bin/contrail-svc-monitor $RESET_CONFIG --conf_file /etc/contrail/svc-monitor.conf"
+        screen_it schema "$(which contrail-schema) $RESET_CONFIG --conf_file /etc/contrail/contrail-schema.conf"
+        screen_it svc-mon "$(which contrail-svc-monitor) $RESET_CONFIG --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
@@ -1025,7 +1025,7 @@ function start_contrail() {
         sleep 2
 
         #opserver_param  
-        screen_it analytics-api "python  $(pywhere opserver)/opserver.py"
+        screen_it analytics-api "$(which contrail-analytics-api)"
         sleep 2
 
         #qed_param
