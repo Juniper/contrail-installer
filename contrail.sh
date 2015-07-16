@@ -1040,14 +1040,15 @@ function start_contrail() {
         fi
         sleep 2
 
-        #provision control
-        python $TOP_DIR/provision_control.py --api_server_ip $SERVICE_HOST --api_server_port 8082 --host_name $HOSTNAME --host_ip $HOST_IP
-
-        # Provision Vrouter - must be run after API server and schema transformer are up
-        sleep 2
         admin_user=${CONTRAIL_ADMIN_USERNAME:-"admin"}
         admin_passwd=${ADMIN_PASSWORD:-"contrail123"}
         admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
+
+        #provision control
+        python $TOP_DIR/provision_control.py --api_server_ip $SERVICE_HOST --api_server_port 8082 --host_name $HOSTNAME --host_ip $HOST_IP --router_asn 64512 --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
+
+        # Provision Vrouter - must be run after API server and schema transformer are up
+        sleep 2
         #changed because control_param.conf is commented
         python $TOP_DIR/provision_vrouter.py --host_name `hostname` --host_ip $CONTROL_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
 
