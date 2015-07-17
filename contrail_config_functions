@@ -327,7 +327,11 @@ function replace_contrail_control_conf()
     check_replace_value $file  IFMAP password $CONTROL_IP
     check_replace_value $file  DISCOVERY server $DISCOVERY_IP
     check_replace_value $file  DISCOVERY port 5998 
-    check_replace_value $file  DEFAULT collectors $COLLECTOR_IP:8086
+    if [ $USE_DISCOVERY = "False" ]; then
+        check_replace_value $file  DEFAULT collectors $COLLECTOR_IP:8086
+    else
+        inicomment $file DEFAULT collectors
+    fi
     check_replace_value $file  DEFAULT hostname `hostname`
     check_replace_value $file  DEFAULT log_file '/var/log/contrail/control.log'
     check_replace_value $file  DEFAULT hostip $CONTROL_IP
@@ -661,7 +665,11 @@ function replace_contrail_vrouter_agent_conf()
     check_replace_value $file  VIRTUAL-HOST-INTERFACE gateway $gateway
     check_replace_value $file  VIRTUAL-HOST-INTERFACE physical_interface $PHYSICAL_INTERFACE
     check_replace_value $file  COLLECTOR port 8080
-    check_replace_value $file  COLLECTOR server $CFGM_IP
+    if [ $USE_DISCOVERY = "False" ]; then
+        check_replace_value $file  COLLECTOR server $CFGM_IP
+    else
+        inicomment $file COLLECTOR server
+    fi
     check_replace_value $file  DISCOVERY server $DISCOVERY_IP
 
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
