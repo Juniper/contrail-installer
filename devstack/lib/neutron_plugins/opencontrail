@@ -15,7 +15,7 @@ function neutron_plugin_configure_common() {
     Q_PLUGIN_CONF_PATH=${Q_PLUGIN_CONF_PATH:-etc/neutron/plugins/opencontrail}
     Q_PLUGIN_CONF_FILENAME=${Q_PLUGIN_CONF_FILENAME:-ContrailPlugin.ini}
     Q_DB_NAME=neutron
-    Q_PLUGIN_CLASS=${Q_PLUGIN_CLASS:-neutron_plugin_contrail.plugins.opencontrail.contrail_plugin.NeutronPluginContrailCoreV2}
+    Q_PLUGIN_CLASS=${Q_PLUGIN_CLASS:-neutron_plugin_contrail.plugins.opencontrail.contrail_plugin_v3.NeutronPluginContrailCoreV3}
 
     local NEUTRON_CONF_PLUGIN_DIR=$NEUTRON_DIR/$Q_PLUGIN_CONF_PATH
     mkdir -p $NEUTRON_CONF_PLUGIN_DIR
