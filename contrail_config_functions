@@ -222,9 +222,16 @@ function replace_discovery_conf()
         cassandra_server=${cassandra_server}""$ip":9160 " 
     done
 
+    zookeeper_server=""
+    for ip in ${ZOOKEEPER_IP_LIST[@]};
+    do
+        zookeeper_server=${zookeeper_server}""$ip","
+    done
+    zookeeper_server=${zookeeper_server::-1}
+    check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
+
     check_replace_value $file DEFAULTS listen_ip_addr $CFGM_IP
     if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
-        check_replace_value $file DEFAULTS zk_server_ip '127.0.0.1'
         check_replace_value $file DEFAULTS zk_server_port 2181
         check_replace_value $file DEFAULTS listen_port 5998
         check_replace_value $file DEFAULTS log_local 'True'
