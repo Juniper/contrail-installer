@@ -942,6 +942,12 @@ function start_contrail() {
         RESET_CONFIG=""
     fi
 
+    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
+        PROV_MS_PATH="$CONTRAIL_SRC/controller/src/config/utils"
+    else
+        PROV_MS_PATH="/usr/share/contrail-utils"
+    fi
+
     mkdir -p $TOP_DIR/status/contrail/
     pid_count=`ls $TOP_DIR/status/contrail/*.pid|wc -l`
     if [[ $pid_count != 0 ]]; then
@@ -1045,12 +1051,12 @@ function start_contrail() {
         admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
 
         #provision control
-        python $TOP_DIR/provision_control.py --api_server_ip $SERVICE_HOST --api_server_port 8082 --host_name $HOSTNAME --host_ip $HOST_IP --router_asn 64512 --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
+        python $PROV_MS_PATH/provision_control.py --api_server_ip $SERVICE_HOST --api_server_port 8082 --host_name $HOSTNAME --host_ip $CONTROL_IP --router_asn 64512 --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
 
         # Provision Vrouter - must be run after API server and schema transformer are up
         sleep 2
         #changed because control_param.conf is commented
-        python $TOP_DIR/provision_vrouter.py --host_name `hostname` --host_ip $CONTROL_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
+        python $PROV_MS_PATH/provision_vrouter.py --host_name `hostname` --host_ip $CONTROL_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
 
     fi
 
@@ -1103,12 +1109,6 @@ END
 
     # set up a proxy route in contrail from 169.254.169.254:80 to
     # my metadata server at port 8775
-    if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
-        PROV_MS_PATH="$CONTRAIL_SRC/controller/src/config/utils"
-    else
-        PROV_MS_PATH="/usr/share/contrail-utils"
-    fi
-
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         python $PROV_MS_PATH/provision_linklocal.py \
             --linklocal_service_name metadata \
