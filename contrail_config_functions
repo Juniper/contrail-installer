@@ -8,6 +8,15 @@ function replace_cassandra_conf()
         sudo sed -i -e 's/listen_address:.*/listen_address: '$CASSANDRA_IP'/' /etc/cassandra/cassandra.yaml
         sudo sed -i -e 's/rpc_address:.*/rpc_address: '$CASSANDRA_IP'/' /etc/cassandra/cassandra.yaml
     fi
+
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        seeds=${seeds}""$ip","
+    done
+    seeds=${seeds::-1}
+
+    sudo sed -i -e 's/seeds:.*/seeds: "'$seeds'"/' /etc/cassandra/cassandra.yaml
 }
 
 
