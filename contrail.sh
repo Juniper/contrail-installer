@@ -56,6 +56,7 @@ USE_CERTS=${USE_CERTS:-false}
 MULTI_TENANCY=${MULTI_TENANCY:-false}
 PUPPET_SERVER=${PUPPET_SERVER:-''}
 
+RABBIT_IP=${RABBIT_IP:-$CFGM_IP}
 CASSANDRA_IP=${CASSANDRA_IP:-'localhost'}
 OPENSTACK_IP=${OPENSTACK_IP:-$CFGM_IP}
 COLLECTOR_IP=${COLLECTOR_IP:-$CFGM_IP}
@@ -1003,7 +1004,7 @@ function start_contrail() {
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
-        screen_it apiSrv "$(which contrail-api) --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD}"
+        screen_it apiSrv "$(which contrail-api) --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
         echo "Waiting for api-server to start..."
         if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= wget -q -O- http://${SERVICE_HOST}:8082; do sleep 1; done"; then
             echo "api-server did not start"
