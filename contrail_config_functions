@@ -385,6 +385,14 @@ function replace_contrail_analytics_api_conf()
     check_replace_value $file DEFAULTS log_file '/var/log/contrail/contrail-analytics-api.log'
     check_replace_value $file DEFAULTS hostip $COLLECTOR_IP
 
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}""$ip":9160 "
+    done
+
+    check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server
+    check_replace_value $file DISCOVERY disc_server_ip $DISCOVERY_IP
     check_replace_value $file DISCOVERY server $DISCOVERY_IP
     check_replace_value $file DISCOVERY port 5998
 }
