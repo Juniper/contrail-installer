@@ -1029,14 +1029,14 @@ function start_contrail() {
 
         # collector/vizd
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            screen_it collector "sudo LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/$TARGET/analytics/vizd"
+            screen_it collector "sudo LD_LIBRARY_PATH=$CONTRAIL_SRC/build/lib:/usr/local/lib $CONTRAIL_SRC/build/$TARGET/analytics/vizd --conf_file /etc/contrail/contrail-collector.conf"
         else
             screen_it collector "sudo PATH=$PATH:/usr/bin LD_LIBRARY_PATH=/usr/lib /usr/bin/contrail-collector"
         fi
         sleep 2
 
         #opserver_param  
-        screen_it analytics-api "$(which contrail-analytics-api)"
+        screen_it analytics-api "$(which contrail-analytics-api) -c /etc/contrail/contrail-analytics-api.conf"
         sleep 2
 
         #qed_param
