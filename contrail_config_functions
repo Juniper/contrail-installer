@@ -1,4 +1,5 @@
-	
+# vim: syntax=sh
+
 source functions
 
 function replace_cassandra_conf()
@@ -397,37 +398,38 @@ function replace_contrail_analytics_api_conf()
     check_replace_value $file DISCOVERY port 5998
 }
 
-function replace_dns_conf()
+function replace_contrail_dns_conf()
 {
-    file="/etc/contrail/dns.conf"
-    port=0
-    CERT_OPTS="" 
+    file="/etc/contrail/dns/contrail-dns.conf"
+    named_log="/var/log/contrail/contrail-named.log"
+    rndc_secret="xvysmOR8lnUQRBcunkC6vg=="
     
-    if $PUPPET_SERVER ; then
-        CERTDIR='/var/lib/puppet/ssl'  
-    else 
-        CERTDIR='/etc/contrail/ssl'
-    fi
-
-    if $USE_CERTS ; then
-        port=8444
-        CERT_OPTS="--use-certs=$CERTDIR" 
+    if [ $USE_DISCOVERY = "False" ]; then
+        check_replace_value $file IFMAP server_url $IFMAP_IP
+        check_replace_value $file DEFAULT collectors $COLLECTOR_IP
     else
-        port=8443
+        inicomment $file IFMAP server_url
+        inicomment $file DEFAULT collectors
     fi
-    check_replace_value $file  ""  IFMAP_SERVER $IFMAP_IP
-    check_replace_value $file  ""  IFMAP_PORT $port
-    check_replace_value $file  ""  IFMAP_USER $CONTROL_IP".dns"
-    check_replace_value $file  ""  IFMAP_PASWD $CONTROL_IP".dns"
-    check_replace_value $file  ""  COLLECTOR $COLLECTOR_IP
-    check_replace_value $file  ""  DISCOVERY $DISCOVERY_IP
-    check_replace_value $file  ""  HOSTIP $CONTROL_IP
-    check_replace_value $file  ""  CERT_OPTS $CERT_OPTS
-    check_replace_value $file  ""  LOG_LOCAL ''
-    if [ "$CONTRAIL_DEFAULT_INSTALL" == "True" ]; then
-        check_replace_value $file  ""  COLLECTOR_PORT 8086
-        check_replace_value $file  ""  DNS_LOGFILE "--log-file=/var/log/contrail/control.log"
-    fi
+    check_replace_value $file IFMAP user ${CONTROL_IP}.dns
+    check_replace_value $file IFMAP password ${CONTROL_IP}.dns
+    check_replace_value $file DISCOVERY server $DISCOVERY_IP
+    check_replace_value $file DISCOVERY port 5998
+    check_replace_value $file DEFAULT hostip $CONTROL_IP
+    check_replace_value $file DEFAULT hostname `hostname`
+    check_replace_value $file DEFAULT log_file '/var/log/contrail/contrail-dns.log'
+    check_replace_value $file DEFAULT log_level 'SYS_NOTICE'
+    check_replace_value $file DEFAULT log_local 1
+    check_replace_value $file DEFAULT named_log_file $named_log
+    check_replace_value $file DEFAULT rndc_secret $rndc_secret
+    check_replace_value $file DEFAULT rndc_config_file 'contrail-rndc.conf'
+
+    # log file must be created with correct permissions for named to start
+    touch $named_log
+    sudo chown $(id -u):root $named_log
+    # https://bugs.launchpad.net/opencontrail/+bug/1479323
+    mkdir -p ${CONTRAIL_SRC}/build/var/run/named/
+    sudo chown root:root ${CONTRAIL_SRC}/build/var/run/named/
 }
 
 function check_dev()

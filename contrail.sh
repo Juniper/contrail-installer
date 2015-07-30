@@ -9,9 +9,9 @@ if [[ $EUID -eq 0 ]]; then
     exit 1
 fi
 if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-    ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
+    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
 else
-    ENABLED_SERVICES=redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
+    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
 fi
 # Save trace setting
 TOP_DIR=`pwd`
@@ -570,9 +570,9 @@ function build_contrail() {
     C_UID=$( id -u )
     C_GUID=$( id -g )
     sudo mkdir -p /var/log/contrail
-    sudo chown $C_UID:$C_GUID /var/log/contrail
-    sudo chmod 755 /var/log/contrail/*
-   
+    sudo chown -R $C_UID:$root /var/log/contrail
+    sudo chmod -R 664 /var/log/contrail/*
+
 
     #checking whether previous execution stage of script is at started then
     #only allow to get the dependencies
@@ -1051,6 +1051,10 @@ function start_contrail() {
         admin_passwd=${ADMIN_PASSWORD:-"contrail123"}
         admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
 
+        # dns
+        screen_it dns "/usr/bin/contrail-dns --conf_file /etc/contrail/dns/contrail-dns.conf"
+        screen_it named "sudo /usr/bin/contrail-named -f -c /etc/contrail/dns/contrail-named.conf"
+
         #provision control
         python $PROV_MS_PATH/provision_control.py --api_server_ip $SERVICE_HOST --api_server_port 8082 --host_name $HOSTNAME --host_ip $CONTROL_IP --router_asn 64512 --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
 
@@ -1149,8 +1153,8 @@ function configure_contrail() {
     C_UID=$( id -u )
     C_GUID=$( id -g )
     sudo mkdir -p /var/log/contrail
-    sudo chown -R $C_UID:$C_GUID /var/log/contrail
-    sudo chmod -R 755 /var/log/contrail/*
+    sudo chown -R $C_UID:root /var/log/contrail
+    sudo chmod -R 664 /var/log/contrail/*
 
     # process gateway configuration if present
     #contrail_gw_interface=""
@@ -1196,7 +1200,7 @@ function configure_contrail() {
         replace_contrail_control_conf
         replace_contrail_collector_conf
         replace_contrail_analytics_api_conf
-        replace_dns_conf
+        replace_contrail_dns_conf
         replace_irond_basic_auth_users
     fi	        
     replace_contrail_compute_conf
@@ -1246,8 +1250,10 @@ function stop_contrail() {
         screen_stop svc-mon
         screen_stop control
         screen_stop collector
-        screen_stop analytics-api 
-        screen_stop query-engine 
+        screen_stop analytics-api
+        screen_stop query-engine
+        screen_stop named
+        screen_stop dns
         screen_stop redis-w
         screen_stop ui-jobs
         screen_stop ui-webs
