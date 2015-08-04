@@ -188,6 +188,7 @@ function replace_svc_monitor_conf()
     check_replace_value $file DEFAULTS ifmap_server_port $port
     check_replace_value $file DEFAULTS api_server_ip $CFGM_IP
     check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
+    check_replace_value $file DEFAULTS disc_server_port 5998
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
     check_replace_value $file DEFAULTS zk_server_port 2181
@@ -203,7 +204,6 @@ function replace_svc_monitor_conf()
         check_replace_value $file DEFAULTS ifmap_password 'svc-monitor'
         check_replace_value $file DEFAULTS api_server_port 8082
         check_replace_value $file DEFAULTS log_file '/var/log/contrail/svc-monitor.log'
-        check_replace_value $file DEFAULTS disc_server_port 5998
     fi
 
     check_replace_value $file SECURITY use_certs $USE_CERTS
