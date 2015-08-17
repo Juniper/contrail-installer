@@ -71,6 +71,7 @@ CONTROL_IP_LIST=${CONTROL_IP_LIST:-$CONTROL_IP}
 DNS_IP_LIST=${DNS_IP_LIST:-$CONTROL_IP}
 
 CONTRAIL_DEFAULT_INSTALL=${CONTRAIL_DEFAULT_INSTALL:-True}
+LAUNCHPAD_REPO=${LAUNCHPAD_BRANCH:-snapshots}
 
 USE_DISCOVERY=${USE_DISCOVERY:-False}
 
@@ -280,6 +281,8 @@ function download_node_for_npm {
             rm -rf node-v0.8.15.tar.gz
             rm -rf node-v0.8.15
             cd ${contrail_cwd_root}
+        else
+            apt_get install nodejs=0.8.15-1contrail1
         fi
     fi
 }
@@ -301,7 +304,7 @@ function download_dependencies {
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
 	    apt_get install python-software-properties
         sudo -E add-apt-repository -y cloud-archive:havana
-        sudo -E add-apt-repository -y ppa:opencontrail/ppa
+        sudo -E add-apt-repository -y ppa:opencontrail
         apt_get update
 
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
@@ -654,9 +657,7 @@ function build_contrail() {
             exit
         fi
     else	
-        if [[ "$LAUNCHPAD_BRANCH" = "mainline" ]]; then
-            sudo -E add-apt-repository -y ppa:opencontrail/snapshots
-        fi
+        sudo -E add-apt-repository -y ppa:opencontrail/$LAUNCHPAD_REPO
         apt_get update
         change_stage "python-dependencies" "Build"
     fi 
@@ -744,9 +745,10 @@ function install_contrail() {
                 apt_get install contrail-web-controller
                 apt_get install ifmap-server 
                 apt_get install python-ncclient
+                apt_get install contrail-dns
 
 		#Updating the messaging installed by python-nova
-                pip_install -U oslo.messaging
+                # pip_install -U oslo.messaging
                 # contrail neutron plugin installs ini file as root
                 sudo chown -R `whoami`:`whoami` /etc/neutron
             fi
