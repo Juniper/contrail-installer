@@ -1017,7 +1017,7 @@ function start_contrail() {
             exit 1
         fi
         sleep 2
-        screen_it schema "$(which contrail-schema) $RESET_CONFIG --conf_file /etc/contrail/contrail-schema.conf"
+        screen_it schema "$(which contrail-schema) $RESET_CONFIG --conf_file /etc/contrail/contrail-schema.conf --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
         screen_it svc-mon "$(which contrail-svc-monitor) $RESET_CONFIG --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
