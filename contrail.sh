@@ -63,6 +63,7 @@ COLLECTOR_IP=${COLLECTOR_IP:-$CFGM_IP}
 DISCOVERY_IP=${DISCOVERY_IP:-$CFGM_IP}
 CONTROL_IP=${CONTROL_IP:-$CFGM_IP}
 IFMAP_IP=${IFMAP_IP:-$CFGM_IP}
+COMPUTE_HOST_IP=${COMPUTE_HOST_IP:-127.0.0.1}
 
 CASSANDRA_IP_LIST=${CASSANDRA_IP_LIST:-127.0.0.1}
 COLLECTOR_IP_LIST=${COLLECTOR_IP_LIST:-$CFGM_IP}
@@ -1065,6 +1066,12 @@ function start_contrail() {
         #changed because control_param.conf is commented
         python $PROV_MS_PATH/provision_vrouter.py --host_name `hostname` --host_ip $CONTROL_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
 
+    elif [ "$INSTALL_PROFILE" = "COMPUTE" ]; then
+        admin_user=${CONTRAIL_ADMIN_USERNAME:-"admin"}
+        admin_passwd=${ADMIN_PASSWORD:-"contrail123"}
+        admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
+        #changed because control_param.conf is commented
+        python $TOP_DIR/provision_vrouter.py --host_name `hostname` --host_ip $COMPUTE_HOST_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
     fi
 
     # agent

@@ -22,6 +22,10 @@ LOG_LEVEL=3
 
 SERVICE_TIMEOUT=180
 SERVICE_HOST=localhost
+
+#use only when INSTALL_PROFILE=COMPUTE, provide IP of compute node
+#COMPUTE_HOST_IP=<IP of compute-node>
+
 INSTALL_PROFILE=ALL
 PHYSICAL_INTERFACE=eth0
 
