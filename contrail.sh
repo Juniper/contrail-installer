@@ -319,7 +319,7 @@ function download_dependencies {
             apt_get install python-lxml python-redis python-jsonpickle
             apt_get install ant debhelper 
             apt_get install linux-headers-$(uname -r)
-            apt_get install libipfix
+            apt_get install libipfix-dev
             apt_get install python-docker-py
         fi	
         apt_get install python-neutron
@@ -394,7 +394,7 @@ function download_python_dependencies {
     # sudo pip install gevent==0.13.8 geventhttpclient==1.0a thrift==0.8.0
     # sudo easy_install -U distribute
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-        pip_install gevent geventhttpclient==1.0a thrift
+        pip_install gevent==1.0 geventhttpclient==1.0a thrift
         pip_install netifaces fabric argparse
         pip_install bottle
         pip_install uuid psutil
@@ -1009,7 +1009,7 @@ function start_contrail() {
         fi
         sleep 2
 
-        screen_it disco "$(which contrail-discovery) $RESET_CONFIG --conf_file /etc/contrail/contrail-discovery.conf"
+        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
@@ -1020,8 +1020,8 @@ function start_contrail() {
             exit 1
         fi
         sleep 2
-        screen_it schema "$(which contrail-schema) $RESET_CONFIG --conf_file /etc/contrail/contrail-schema.conf --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
-        screen_it svc-mon "$(which contrail-svc-monitor) $RESET_CONFIG --conf_file /etc/contrail/svc-monitor.conf"
+        screen_it schema "$(which contrail-schema) --conf_file /etc/contrail/contrail-schema.conf --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
+        screen_it svc-mon "$(which contrail-svc-monitor) --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
