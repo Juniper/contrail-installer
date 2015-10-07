@@ -76,7 +76,7 @@ LAUNCHPAD_REPO=${LAUNCHPAD_BRANCH:-snapshots}
 
 USE_DISCOVERY=${USE_DISCOVERY:-False}
 
-RABBIT_USER=${RABBIT_USER:-guest}
+RABBIT_USER=${RABBIT_USER:-rabbitcontrail}
 
 TARGET=${TARGET:-production}
 SCONS_ARGS="--opt=$TARGET"
@@ -672,6 +672,22 @@ function build_contrail() {
  
 }
 
+function rabbit_setuser {
+    local user="$1" pass="$2" found="" out=""
+    out=$(sudo rabbitmqctl list_users) ||
+        { echo "failed to list users" 1>&2; return 1; }
+    found=$(echo "$out" | awk '$1 == user { print $1 }' "user=$user")
+    if [ "$found" = "$user" ]; then
+        sudo rabbitmqctl change_password "$user" "$pass" ||
+            { echo "failed changing pass for '$user'" 1>&2; return 1; }
+    else
+        sudo rabbitmqctl add_user "$user" "$pass" ||
+            { echo "failed changing pass for $user"; return 1; }
+    fi
+    sudo rabbitmqctl set_permissions "$user" ".*" ".*" ".*"
+    sudo rabbitmqctl set_vm_memory_high_watermark 0.2
+}
+
 function install_contrail() {
   
     echo_summary "-----------------------INSTALL PHASE STARTED------------------------" 
@@ -755,8 +771,7 @@ function install_contrail() {
             fi
             # get cassandra
             download_cassandra
-            sudo rabbitmqctl change_password $RABBIT_USER $RABBIT_PASSWORD
-            sudo rabbitmqctl set_vm_memory_high_watermark 0.2
+            rabbit_setuser "$RABBIT_USER" "$RABBIT_PASSWORD"
             download_zookeeper
             change_stage "Build" "install"
             
