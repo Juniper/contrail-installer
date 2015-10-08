@@ -704,7 +704,9 @@ function install_contrail() {
 
                 # install contrail modules
                 echo "Installing contrail modules"
-                pip_install --upgrade $(find $CONTRAIL_SRC/build/$TARGET -name "*.tar.gz" -print)
+                pip_install --upgrade --no-deps $(find $CONTRAIL_SRC/build/$TARGET -name "*.tar.gz" -print)
+                pip_install $(find $CONTRAIL_SRC/build/$TARGET -name "*.tar.gz" -print)
+
 
                 # install VIF driver
                 pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
