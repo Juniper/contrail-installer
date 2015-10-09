@@ -68,8 +68,8 @@ Run the following NOT AS ROOT:
 
 # OpenContrail+Devstack
 
-Trunk of contrail-installer currently work with stable/havana, 
-stable/icehouse and trunk of devstack.
+Trunk of contrail-installer currently work with stable/juno.
+
 
     git clone git@github.com:openstack-dev/devstack
     
@@ -84,7 +84,7 @@ Use a sample localrc:
 Run stack.sh
 
     cd devstack
-    git checkout stable/havana
+    git checkout stable/juno
     (edit localrc as needed - physical interface, host ip ...)
     ./stack.sh
 
