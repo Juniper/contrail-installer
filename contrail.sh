@@ -1088,7 +1088,7 @@ function start_contrail() {
         admin_passwd=${ADMIN_PASSWORD:-"contrail123"}
         admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
         #changed because control_param.conf is commented
-        python $TOP_DIR/provision_vrouter.py --host_name `hostname` --host_ip $COMPUTE_HOST_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
+        python $PROV_MS_PATH/provision_vrouter.py --host_name `hostname` --host_ip $COMPUTE_HOST_IP --api_server_ip $SERVICE_HOST --oper add --admin_user $admin_user --admin_password $admin_passwd --admin_tenant_name $admin_tenant
     fi
 
     # agent
