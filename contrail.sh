@@ -648,7 +648,6 @@ function build_contrail() {
             if [[ $(read_stage) == "fetch-packages" ]]; then
                 sudo scons $SCONS_ARGS controller/src/vnsw
                 sudo scons $SCONS_ARGS vrouter
-                sudo scons $SCONS_ARGS openstack/nova_contrail_vif
                 ret_val=$?
                 [[ $ret_val -ne 0 ]] && exit $ret_val
                 change_stage "fetch-packages" "Build"          
@@ -709,9 +708,9 @@ function install_contrail() {
 
 
                 # install VIF driver
-                pip_install $CONTRAIL_SRC/build/noarch/nova_contrail_vif/dist/nova_contrail_vif*.tar.gz
+                setup_develop $CONTRAIL_SRC/openstack/nova_contrail_vif
                 # install Neutron OpenContrail plugin
-                pip_install $CONTRAIL_SRC/openstack/neutron_plugin/
+                setup_develop $CONTRAIL_SRC/openstack/neutron_plugin/
   
                 # install neutron patch after VNC api is built and installed
                 # test_install_neutron_patch
