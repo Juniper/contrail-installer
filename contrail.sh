@@ -8,16 +8,17 @@ if [[ $EUID -eq 0 ]]; then
     echo "Cut it out."
     exit 1
 fi
-if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
-else
-    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
-fi
 # Save trace setting
 TOP_DIR=`pwd`
 CONTRAIL_USER=$(whoami)
 source functions
 source localrc
+
+if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
+    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
+else
+    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
+fi
 
 # Determine what system we are running on. This provides ``os_VENDOR``,
 # ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
@@ -1028,15 +1029,23 @@ function start_contrail() {
         screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
+        RABBIT_OPTS="--rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
+
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
-        screen_it apiSrv "$(which contrail-api) --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
+        screen_it apiSrv "$(which contrail-api) --conf_file /etc/contrail/contrail-api.conf $RESET_CONFIG $RABBIT_OPTS"
         echo "Waiting for api-server to start..."
         if ! timeout $SERVICE_TIMEOUT sh -c "while ! http_proxy= wget -q -O- http://${SERVICE_HOST}:8082; do sleep 1; done"; then
             echo "api-server did not start"
             exit 1
         fi
         sleep 2
-        screen_it schema "$(which contrail-schema) --conf_file /etc/contrail/contrail-schema.conf --rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
+        # earlier releases (2.x for example) schema didn't handle rabbit options
+        echo "$CONTRAIL_BRANCH" | grep -q "^R2" || echo "$LAUNCHPAD_BRANCH" | grep -q "^r2"
+        if [ $? == 0 ]; then
+            screen_it schema "$(which contrail-schema) --conf_file /etc/contrail/contrail-schema.conf"
+        else
+            screen_it schema "$(which contrail-schema) --conf_file /etc/contrail/contrail-schema.conf $RABBIT_OPTS"
+        fi
         screen_it svc-mon "$(which contrail-svc-monitor) --conf_file /etc/contrail/svc-monitor.conf"
 
         #source /etc/contrail/control_param.conf
@@ -1284,7 +1293,7 @@ function stop_contrail() {
         screen_stop ui-webs
     fi
     screen_stop agent  
-    rm $CONTRAIL_DIR/status/contrail/*.failure /dev/null 2>&1
+    rm $TOP_DIR/status/contrail/*.failure /dev/null 2>&1
     cmd=$(lsmod | grep vrouter)
     if [ $? == 0 ]; then
         cmd=$(sudo rmmod vrouter)

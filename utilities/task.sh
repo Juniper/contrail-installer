@@ -10,6 +10,7 @@
 
 CLONE_DIR=${CLONE_DIR:-`pwd`} 
 ENABLE_BINARY=${ENABLE_BINARY:-False}
+LAUNCHPAD_BRANCH=${LAUNCHPAD_BRANCH:-snapshots}
 WITH_CONTRAIL_CLONE=${WITH_CONTRAIL_CLONE:-True}
 ENABLE_CI=${ENABLE_CI:-False}
 DEVSTACK_CLONE_URL=${DEVSTACK_CLONE_URL:-"https://github.com/openstack-dev/devstack.git"}
@@ -53,6 +54,8 @@ function replace_localrc_bin_master()
         cp samples/localrc-all ./localrc
         #sed -i "s/.*SERVICE_HOST=localhost.*/SERVICE_HOST=$IP/" ./localrc 
         sed -i "s/.*# CONTRAIL_REPO_PROTO=https.*/CONTRAIL_REPO_PROTO=https/" ./localrc
+        sed -i "s/.*CONTRAIL_DEFAULT_INSTALL=False.*/CONTRAIL_DEFAULT_INSTALL=True/" ./localrc
+        sed -i "s/.*LAUNCHPAD_BRANCH=.*/LAUNCHPAD_BRANCH=$LAUNCHPAD_BRANCH/" ./localrc
         echo "USE_SCREENS=True" >> ./localrc
     fi
 }
@@ -289,6 +292,7 @@ function start_script()
             echo "----------------------"
             echo "CONTRAIL_INSTALLER_BRANCH : if any specfic branch is to be cloned"
             echo "ENABLE_BINARY : set this value to True or False"  
+            echo "LAUNCHPAD_BRANCH : set this value to PPA release if ENABLE_BINARY is True"
             echo "DEVSTACK_CLONE_BRANCH : devstack branch to be cloned" 
             echo "ENABLE_CI : set this value to True or False"
             echo "CONTRAIL_SRC : contrail source directory"
