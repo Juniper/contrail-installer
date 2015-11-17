@@ -136,7 +136,7 @@ function generate_keys()
 function launch_vm(){
     vm_name=$1
     report_file=$2
-    image=cirros-0.3.1-x86_64-uec
+    image=cirros-0.3.4-x86_64-uec
     flavor=m1.nano
     vmargs="--image $image --flavor $flavor --key-name sshkey"
 
