@@ -315,7 +315,6 @@ function download_dependencies {
             apt_get install python-dev autoconf automake build-essential libtool protobuf-compiler libprotobuf-dev
             apt_get install libevent-dev libxml2-dev libxslt-dev librdkafka-dev
             apt_get install uml-utilities
-            apt_get install libvirt-bin
             apt_get install python-software-properties
             apt_get install python-lxml python-redis python-jsonpickle
             apt_get install ant debhelper 
@@ -323,6 +322,7 @@ function download_dependencies {
             apt_get install libipfix-dev
             apt_get install python-docker-py
         fi	
+        apt_get install libvirt-bin
         apt_get install python-neutron
         if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install software-properties-common
