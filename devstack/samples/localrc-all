@@ -30,6 +30,6 @@ PHYSICAL_INTERFACE=eth0
 GIT_BASE=https://git.openstack.org
 
 # opencontrail nova plugin
-NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
+# NOVA_VIF_DRIVER=nova_contrail_vif.contrailvif.VRouterVIFDriver
 
 Q_PLUGIN_CLASS=neutron_plugin_contrail.plugins.opencontrail.contrail_plugin.NeutronPluginContrailCoreV2

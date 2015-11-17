@@ -58,5 +58,10 @@ function has_neutron_plugin_security_group() {
 function neutron_plugin_check_adv_test_requirements() {
     return 0
 }
+
+function neutron_plugin_create_nova_conf {
+    iniset $NOVA_CONF DEFAULT network_api_class nova_contrail_vif.contrailvif.ContrailNetworkAPI
+}
+
 # Restore xtrace
 $MY_XTRACE
