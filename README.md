@@ -36,12 +36,12 @@ latest snapshots as this knob is commented out by default in sample localrc.
 PHYSICAL_INTERFACE - This is external interface Vrouter should bind to. It should have
 a valid IP address configured. For example eth0
 
-INSTALL_PORFILE - Set this to ALL to for an all in one node. 
+INSTALL_PROFILE - Set this to ALL to for an all in one node. 
 
 USE_SCREEN - Set this to True to launch contrail modules in a screen session called
-"contrail". Connect to screen session for any troubleshooring of contrail modules.
+"contrail". Connect to screen session for any troubleshooting of contrail modules.
 
-LOGFILE - Specifiy logfile for contrail.sh runs. By default this is log/contrail.log
+LOGFILE - Specify logfile for contrail.sh runs. By default this is log/contrail.log
 in contrail-installer directory
 
 # OpenContrail script
@@ -55,7 +55,7 @@ Contrail.sh is the main script that supports following options:
     stop      ... to Stop OpenContrail Modules
     restart   ... to Restart OpenContrail Modules without resetting data
 
-# Launcing OpenContrail
+# Launching OpenContrail
 
 Run the following NOT AS ROOT:
 
@@ -91,7 +91,7 @@ Run stack.sh
 # Restarting OpenContrail+Devstack
 
 If you need to restart OpenContrail or Devstack for some reason, currently they
-need to be synchonized. So
+need to be synchronized. So
 
     cd ~/devstack
     ./unstack.sh
