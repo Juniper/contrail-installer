@@ -35,6 +35,7 @@ GIT_BASE=${GIT_BASE:-git://github.com}
 CONTRAIL_BRANCH=${CONTRAIL_BRANCH:-master}
 NEUTRON_PLUGIN_BRANCH=${NEUTRON_PLUGIN_BRANCH:-CONTRAIL_BRANCH}
 Q_META_DATA_IP=${Q_META_DATA_IP:-127.0.0.1}
+ZK_VER=${ZK_VER:-3.4.7}
 
 unset LANG
 unset LANGUAGE
@@ -528,15 +529,15 @@ function download_zookeeper {
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
         contrail_cwd=$(pwd)
         cd $CONTRAIL_SRC/third_party
-        cd zookeeper-3.4.6
+        cd zookeeper-${ZK_VER}
         cp conf/zoo_sample.cfg conf/zoo.cfg
         cd ${contrail_cwd}
-    elif [ ! -d $CONTRAIL_SRC/third_party/zookeeper-3.4.6 ]; then
+    elif [ ! -d $CONTRAIL_SRC/third_party/zookeeper-${ZK_VER} ]; then
         contrail_cwd=$(pwd)
         cd $CONTRAIL_SRC/third_party
-        wget http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-3.4.6.tar.gz
-        tar xvzf zookeeper-3.4.6.tar.gz
-        cd zookeeper-3.4.6
+        wget http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-${ZK_VER}.tar.gz
+        tar xvzf zookeeper-${ZK_VER}.tar.gz
+        cd zookeeper-${ZK_VER}
         cp conf/zoo_sample.cfg conf/zoo.cfg
         cd ${contrail_cwd}
     fi
@@ -1013,7 +1014,7 @@ function start_contrail() {
 
         screen_it cass "sudo MAX_HEAP_SIZE=$CASS_MAX_HEAP_SIZE HEAP_NEWSIZE=$CASS_HEAP_NEWSIZE $CASS_PATH -f"
 
-        screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh start"
+        screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-${ZK_VER}; ./bin/zkServer.sh start"
 
 	if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
             if is_ubuntu; then
@@ -1271,7 +1272,7 @@ function stop_contrail() {
             screen -X -S $SESSION quit
         fi
     fi
-    (cd $CONTRAIL_SRC/third_party/zookeeper-3.4.6; ./bin/zkServer.sh stop)
+    (cd $CONTRAIL_SRC/third_party/zookeeper-${ZK_VER}; ./bin/zkServer.sh stop)
     echo_summary "-----------------------STOPPING CONTRAIL--------------------------"
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         screen_stop redis
