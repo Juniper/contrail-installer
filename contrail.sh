@@ -322,6 +322,7 @@ function download_dependencies {
             apt_get install linux-headers-$(uname -r)
             apt_get install libipfix-dev
             apt_get install python-docker-py
+            download_cassandra_cpp_drivers
         fi	
         apt_get install libvirt-bin
         apt_get install python-neutron
@@ -475,6 +476,16 @@ function repo_initialize_backup {
             fi
             sed -i 's/fetch=".."/fetch=\"https:\/\/github.com\/Juniper\/\"/' .repo/manifest.xml
         fi
+    fi
+}
+
+function download_cassandra_cpp_drivers {
+    echo "Downloading cassanadra CPP drivers"
+    if is_ubuntu; then
+        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/cassandra-cpp-driver_2.2.0-1_amd64.deb
+        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/cassandra-cpp-driver-dev_2.2.0-1_amd64.deb
+        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/libuv_1.7.5-1_amd64.deb
+        sudo dpkg -i cassandra-cpp-driver_2.2.0-1_amd64.deb cassandra-cpp-driver-dev_2.2.0-1_amd64.deb libuv_1.7.5-1_amd64.deb
     fi
 }
 
