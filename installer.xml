@@ -16,7 +16,7 @@
   -->
   <package>
     <name>zookeeper</name>
-    <url>http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-3.4.6.tar.gz</url>
+    <url>http://apache.mirrors.hoobly.com/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz</url>
     <format>tgz</format>
     <md5>971c379ba65714fd25dc5fe8f14e9ad1</md5>
   </package>

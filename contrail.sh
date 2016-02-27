@@ -546,7 +546,7 @@ function download_zookeeper {
     elif [ ! -d $CONTRAIL_SRC/third_party/zookeeper-${ZK_VER} ]; then
         contrail_cwd=$(pwd)
         cd $CONTRAIL_SRC/third_party
-        wget http://apache.mirrors.hoobly.com/zookeeper/stable/zookeeper-${ZK_VER}.tar.gz
+        wget http://apache.mirrors.hoobly.com/zookeeper/zookeeper-${ZK_VER}/zookeeper-${ZK_VER}.tar.gz
         tar xvzf zookeeper-${ZK_VER}.tar.gz
         cd zookeeper-${ZK_VER}
         cp conf/zoo_sample.cfg conf/zoo.cfg
