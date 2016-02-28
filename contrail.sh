@@ -421,6 +421,7 @@ function download_python_dependencies {
     fi
 
     pip_install --upgrade six
+    pip_install cassandra-driver kafka
 }
 
 function repo_initialize {
