@@ -1039,9 +1039,6 @@ function start_contrail() {
         fi
         sleep 2
 
-        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
-        sleep 2
-
         RABBIT_OPTS="--rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
@@ -1052,6 +1049,11 @@ function start_contrail() {
             exit 1
         fi
         sleep 2
+
+        # discovery must start after api server because latter creates cassandra CF needed by discovery
+        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf
+        sleep 2
+
         # earlier releases (2.x for example) schema didn't handle rabbit options
         echo "$CONTRAIL_BRANCH" | grep -q "^R2" || echo "$LAUNCHPAD_BRANCH" | grep -q "^r2"
         if [ $? == 0 ]; then
