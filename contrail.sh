@@ -1051,7 +1051,7 @@ function start_contrail() {
         sleep 2
 
         # discovery must start after api server because latter creates cassandra CF needed by discovery
-        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf
+        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # earlier releases (2.x for example) schema didn't handle rabbit options
