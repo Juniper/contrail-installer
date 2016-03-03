@@ -322,6 +322,7 @@ function download_dependencies {
             apt_get install linux-headers-$(uname -r)
             apt_get install libipfix-dev
             apt_get install python-docker-py
+            apt_get install libzookeeper-mt2 libzookeeper-mt-dev
             download_cassandra_cpp_drivers
         fi	
         apt_get install libvirt-bin
