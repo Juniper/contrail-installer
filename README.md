@@ -14,9 +14,8 @@ stable versions, use appropriate release name.
 
 Currently contrail-installer supports the following:
 
-    mainline sources 
-    OpenContrail packages - snapshots 
-    OpenContrail packages - release 1.2 (currently)
+    contrail-installer: sources master,    devstack: stable/kilo
+    contrail-installer: sources R3.0,      devstack: stable/kilo
 
 # OpenContrail localrc
 

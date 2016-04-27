@@ -32,6 +32,9 @@ PHYSICAL_INTERFACE=eth0
 # to get source code make it as False
 CONTRAIL_DEFAULT_INSTALL=False
 
+# default branch is master
+# CONTRAIL_BRANCH=R3.0
+
 # to get the ppa packages uncomment
 # LAUNCHPAD_BRANCH=r2.20
 
@@ -49,3 +52,7 @@ CASS_HEAP_NEWSIZE=100M
 
 # target of the build debug/production
 # TARGET=production
+
+CONTRAIL_VGW_INTERFACE=vgw
+CONTRAIL_VGW_PUBLIC_SUBNET=11.0.0.0/24
+CONTRAIL_VGW_PUBLIC_NETWORK=default-domain:demo:net:net

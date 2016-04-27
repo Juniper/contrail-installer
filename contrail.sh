@@ -868,7 +868,7 @@ function insert_vrouter() {
     fi
     # don't die in small memory environments
     if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-        sudo insmod $CONTRAIL_SRC/vrouter/$kmod vr_flow_entries=1024 vr_oflow_entries=128 vr_bridge_entries=128
+        sudo insmod $CONTRAIL_SRC/vrouter/$kmod vr_flow_entries=2048 vr_oflow_entries=256 vr_bridge_entries=256
         if [[ $? -eq 1 ]] ; then 
             exit 1
         fi
