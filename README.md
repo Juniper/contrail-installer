@@ -9,13 +9,14 @@ is typically used in conjunction with devstack.
 # Versions
 
 The contrail-installer master branch generally points to trunk versions 
-of OpenContrail components, whether sources or snapshots.  For older, 
+of OpenContrail components whether sources or snapshots.  For older, 
 stable versions, use appropriate release name. 
 
 Currently contrail-installer supports the following:
 
     contrail-installer: sources master,    devstack: stable/kilo
     contrail-installer: sources R3.0,      devstack: stable/kilo
+    contrail-installer: packages R2.20,    devstack: stable/kilo
 
 # OpenContrail localrc
 
