@@ -30,13 +30,13 @@ INSTALL_PROFILE=ALL
 PHYSICAL_INTERFACE=eth0
 
 # to get source code make it as False
-CONTRAIL_DEFAULT_INSTALL=False
+CONTRAIL_DEFAULT_INSTALL=True
 
 # default branch is master
 # CONTRAIL_BRANCH=R3.0
 
 # to get the ppa packages uncomment
-# LAUNCHPAD_BRANCH=r2.20
+LAUNCHPAD_BRANCH=r2.20
 
 # repo proto is https or (default) ssh. Leave commented for ssh
 # CONTRAIL_REPO_PROTO=https

@@ -1040,6 +1040,10 @@ function start_contrail() {
         fi
         sleep 2
 
+        # discovery must start before api server because latter publishes info to discovery
+        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
+        sleep 2
+
         RABBIT_OPTS="--rabbit_user ${RABBIT_USER} --rabbit_password ${RABBIT_PASSWORD} --rabbit_server ${RABBIT_IP}"
 
         # find the directory where vnc_cfg_api_server was installed and start vnc_cfg_api_server.py
@@ -1049,10 +1053,6 @@ function start_contrail() {
             echo "api-server did not start"
             exit 1
         fi
-        sleep 2
-
-        # discovery must start after api server because latter creates cassandra CF needed by discovery
-        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
         sleep 2
 
         # earlier releases (2.x for example) schema didn't handle rabbit options
@@ -1121,7 +1121,7 @@ function start_contrail() {
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
             sudo $CONTRAIL_SRC/build/$TARGET/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
         else
-            sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
+            sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
         fi            
         sudo ifconfig $CONTRAIL_VGW_INTERFACE up
         sudo route add -net $CONTRAIL_VGW_PUBLIC_SUBNET dev $CONTRAIL_VGW_INTERFACE
