@@ -233,7 +233,6 @@ function start_sanity_script()
             vm2_status=$?
             if [[ $vm1_status -eq 0 ]] && [[ $vm2_status -eq 0 ]] ; then
                 status_flags[4]="PASSED"
-                install_ping_requirements
                 ping_vms $VM1_IP $VM2_IP
                 
             else
@@ -410,11 +409,6 @@ function final_sanity_script()
     cat $final_report_file
 }
 
-function install_ping_requirements
-{
-    sudo apt-get install sshpass
-    sudo apt-get install expect
-}
 function ping_vms() { 
     sleep 20
     report_file=$CLONE_DIR/sanity_status/Opencontrail_vm_communication  

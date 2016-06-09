@@ -341,6 +341,8 @@ function download_dependencies {
             apt_get install python-kombu
         fi
         apt_get install python-sphinx
+        # ping requirements
+        apt_get install sshpass expect
     else
         yum_install wget
 
