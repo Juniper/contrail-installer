@@ -110,20 +110,19 @@ below
     ./stack.sh
 
 # Verify installation
-1) screen -x contrail and run through various tabs to see various contrail modules are running
-2) Run utilities/contrail-status to see if all services are running
-
+    1) screen -x contrail and run through various tabs to see various contrail modules are running
+    2) Run utilities/contrail-status to see if all services are running
 
 
 # Running sanity
-Note that default sample file enables simple gateway. A script is available that will
+Note that default sample localrc enables simple gateway. A script is available that will
 create a virtual network, launch two VMs, ping each VM from host and then SSH into it.
 Follow the steps below:
 
-cd ~/contrail-installer/utilities
-export CONTRAIL_DIR=~/contrail-installer
-export DEVSTACK_DIR=~/devstack
-./contrail-sanity
+    cd ~/contrail-installer/utilities
+    export CONTRAIL_DIR=~/contrail-installer
+    export DEVSTACK_DIR=~/devstack
+    ./contrail-sanity
 
 # Automating contrail.sh and devstack
 contrail-installer/utilities/task.sh attempts to automate steps required by sequential runs
@@ -131,12 +130,13 @@ of contrail.sh and devstack. It works off a configuration file. Default called a
 provided. Following example launches task.sh in binary PPA mode while using R2.20 packages.
 See auto.conf for more options to launch in source mode or with use of snapshots
 
-<no-root-user #>:~/contrail-installer/utilities$ diff auto.conf my.conf
-17c17
-< ENABLE_BINARY=False
----
-> ENABLE_BINARY=True
-22a23
-> LAUNCHPAD_BRANCH=r2.20
+    $ cd ~/contrail-installer/utilities
+    $ diff auto.conf my.conf
+    17c17
+    < ENABLE_BINARY=False
+    ---
+    > ENABLE_BINARY=True
+    22a23
+    > LAUNCHPAD_BRANCH=r2.20
 
-<non-root-user>:~/contrail-installer/utilities$ ./task.sh my.conf
+    $ ./task.sh my.conf
