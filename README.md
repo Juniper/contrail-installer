@@ -68,7 +68,7 @@ Run the following NOT AS ROOT:
 
 # OpenContrail+Devstack
 
-Trunk of contrail-installer currently work with stable/juno.
+Trunk of contrail-installer currently works with stable/kilo
 
 
     git clone git@github.com:openstack-dev/devstack
@@ -77,14 +77,14 @@ A glue file is needed in the interim till it is upstreamed to devstack
 
     cp ~/contrail-installer/devstack/lib/neutron_plugins/opencontrail lib/neutron_plugins/
 
-Use a sample localrc:
+Use sample localrc:
 
     cp ~/contrail-installer/devstack/samples/localrc-all localrc
 
 Run stack.sh
 
     cd devstack
-    git checkout stable/juno
+    git checkout stable/kilo
     (edit localrc as needed - physical interface, host ip ...)
     ./stack.sh
 
@@ -95,8 +95,14 @@ need to be synchronized. So
 
     cd ~/devstack
     ./unstack.sh
+
     cd ~/contrail-installer
-    ./contrail.sh stop
+    ./contrail.sh restart
+    cd ~/devstack
+    ./stack.sh
+
+if issues persist, it might be helpful to reboot server or VM and repeat the steps
+below
 
     cd ~/contrail-installer
     ./contrail.sh start
@@ -106,3 +112,31 @@ need to be synchronized. So
 # Verify installation
 1) screen -x contrail and run through various tabs to see various contrail modules are running
 2) Run utilities/contrail-status to see if all services are running
+
+
+
+# Running sanity
+Note that default sample file enables simple gateway. A script is available that will
+create a virtual network, launch two VMs, ping each VM from host and then SSH into it.
+Follow the steps below:
+
+cd ~/contrail-installer/utilities
+export CONTRAIL_DIR=~/contrail-installer
+export DEVSTACK_DIR=~/devstack
+./contrail-sanity
+
+# Automating contrail.sh and devstack
+contrail-installer/utilities/task.sh attempts to automate steps required by sequential runs
+of contrail.sh and devstack. It works off a configuration file. Default called auto.conf is
+provided. Following example launches task.sh in binary PPA mode while using R2.20 packages.
+See auto.conf for more options to launch in source mode or with use of snapshots
+
+<no-root-user #>:~/contrail-installer/utilities$ diff auto.conf my.conf
+17c17
+< ENABLE_BINARY=False
+---
+> ENABLE_BINARY=True
+22a23
+> LAUNCHPAD_BRANCH=r2.20
+
+<non-root-user>:~/contrail-installer/utilities$ ./task.sh my.conf
