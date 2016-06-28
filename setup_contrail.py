@@ -471,7 +471,7 @@ HWADDR=%s
                     
         if 'config' in self._args.role:
             openstack_ip = self._args.openstack_ip
-            cassandra_server_list = [(cassandra_server_ip, '9160') for cassandra_server_ip in self._args.cassandra_ip_list]
+            cassandra_server_list = [(cassandra_server_ip, '9042') for cassandra_server_ip in self._args.cassandra_ip_list]
             template_vals = {'__contrail_ifmap_server_ip__': cfgm_ip,
                              '__contrail_ifmap_server_port__': '8444' if use_certs else '8443',
                              '__contrail_ifmap_username__': 'api-server',
