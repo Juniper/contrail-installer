@@ -278,14 +278,14 @@ function download_node_for_npm {
             contrail_cwd_root=$(pwd)
             cd $CONTRAIL_SRC/third_party    
             contrail_cwd=$(pwd)
-            cd node-v0.8.15
+            cd node-v0.10.35
             ./configure; make; sudo make install
             cd ${contrail_cwd}
-            rm -rf node-v0.8.15.tar.gz
-            rm -rf node-v0.8.15
+            rm -rf node-v0.10.35.tar.gz
+            rm -rf node-v0.10.35
             cd ${contrail_cwd_root}
         else
-            apt_get install nodejs=0.8.15-1contrail1
+            apt_get install nodejs=0.10.35-1contrail1
         fi
     fi
 }
@@ -323,6 +323,8 @@ function download_dependencies {
             apt_get install libipfix-dev
             apt_get install python-docker-py
             apt_get install libzookeeper-mt2 libzookeeper-mt-dev
+            apt_get install libpcap-dev
+            apt_get install python-sseclient
             download_cassandra_cpp_drivers
         fi	
         apt_get install libvirt-bin
@@ -486,8 +488,8 @@ function repo_initialize_backup {
 function download_cassandra_cpp_drivers {
     echo "Downloading cassanadra CPP drivers"
     if is_ubuntu; then
-        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/v2.2.0/cassandra-cpp-driver_2.2.0-1_amd64.deb
-        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/v2.2.0/cassandra-cpp-driver-dev_2.2.0-1_amd64.deb
+        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/cassandra/v2.2.0/cassandra-cpp-driver_2.2.0-1_amd64.deb
+        wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/cassandra/v2.2.0/cassandra-cpp-driver-dev_2.2.0-1_amd64.deb
         wget http://downloads.datastax.com/cpp-driver/ubuntu/14.04/dependencies/libuv/v1.7.5/libuv_1.7.5-1_amd64.deb
         sudo dpkg -i cassandra-cpp-driver_2.2.0-1_amd64.deb cassandra-cpp-driver-dev_2.2.0-1_amd64.deb libuv_1.7.5-1_amd64.deb
     fi

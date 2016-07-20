@@ -28,8 +28,8 @@
   </package>
   <package>
     <name>NodeJS</name>
-    <url>http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz</url>
+    <url>http://nodejs.org/dist/v0.10.35/node-v0.10.35.tar.gz</url>
     <format>tgz</format>
-    <md5>6cb31180b07475db103e694f65e8bb9b</md5>
+    <md5>2c00d8cf243753996eecdc4f6e2a2d11</md5>
   </package>
 </packages>
