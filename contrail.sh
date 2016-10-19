@@ -341,6 +341,8 @@ function download_dependencies {
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
             apt_get install python-kombu
+            sudo service rabbitmq-server start
+            sudo update-rc.d rabbitmq-server defaults
         fi
         apt_get install python-sphinx
         # ping requirements
