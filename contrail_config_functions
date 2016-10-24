@@ -365,7 +365,7 @@ function replace_contrail_collector_conf()
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
     do
-        cassandra_server=${cassandra_server}""$ip":9160 "
+        cassandra_server=${cassandra_server}""$ip":9042 "
     done
     if [[ $COLLECTOR_IP = "localhost" ]]; then
         COLLECTOR_IP="127.0.0.1"
@@ -389,7 +389,7 @@ function replace_contrail_analytics_api_conf()
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
     do
-        cassandra_server=${cassandra_server}""$ip":9160 "
+        cassandra_server=${cassandra_server}""$ip":9042 "
     done
 
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server
