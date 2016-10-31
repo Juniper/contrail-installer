@@ -328,7 +328,6 @@ function download_dependencies {
             download_cassandra_cpp_drivers
         fi	
         apt_get install libvirt-bin
-        apt_get install python-neutron
         if [[ ${DISTRO} =~ (trusty) ]]; then
             apt_get install software-properties-common
             apt_get install libboost-dev libboost-chrono-dev libboost-date-time-dev

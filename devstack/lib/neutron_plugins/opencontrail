@@ -35,6 +35,7 @@ function neutron_plugin_configure_service() {
     iniset $NEUTRON_CONF quotas quota_driver neutron.quota.ConfDriver
     local PY_PLUGIN_PATH=$(python -c "import neutron_plugin_contrail; print neutron_plugin_contrail.__path__[0]")
     iniset $NEUTRON_CONF DEFAULT api_extensions_path extensions:$PY_PLUGIN_PATH/extensions
+    iniset $NEUTRON_CONF KEYSTONE_AUTHTOKEN auth_protocol http
 }
 
 function neutron_plugin_setup_interface_driver() {
