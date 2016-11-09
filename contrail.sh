@@ -15,9 +15,9 @@ source functions
 source localrc
 
 if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs
+    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,ui-jobs,ui-webs,kafka,alarm
 else
-    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w
+    ENABLED_SERVICES=named,dns,redis,cass,zk,ifmap,disco,apiSrv,schema,svc-mon,control,collector,analytics-api,query-engine,agent,redis-w,kafka,alarm
 fi
 
 # Determine what system we are running on. This provides ``os_VENDOR``,
@@ -70,6 +70,8 @@ COMPUTE_HOST_IP=${COMPUTE_HOST_IP:-127.0.0.1}
 CASSANDRA_IP_LIST=${CASSANDRA_IP_LIST:-127.0.0.1}
 COLLECTOR_IP_LIST=${COLLECTOR_IP_LIST:-$CFGM_IP}
 ZOOKEEPER_IP_LIST=${ZOOKEEPER_IP_LIST:-127.0.0.1}
+RABBITMQ_IP_LIST=${RABBITMQ_IP_LIST:-127.0.0.1}
+KAFKA_IP_LIST=${KAFKA_IP_LIST:-127.0.0.1}
 CONTROL_IP_LIST=${CONTROL_IP_LIST:-$CONTROL_IP}
 DNS_IP_LIST=${DNS_IP_LIST:-$CONTROL_IP}
 
@@ -306,7 +308,7 @@ function download_dependencies {
         apt_get install default-jdk javahelper
         apt_get install libcommons-codec-java libhttpcore-java liblog4j1.2-java
 	    apt_get install python-software-properties
-        sudo -E add-apt-repository -y cloud-archive:havana
+        sudo -E add-apt-repository -y cloud-archive:precise
         sudo -E add-apt-repository -y ppa:opencontrail
         apt_get update
 
@@ -340,8 +342,7 @@ function download_dependencies {
         if [ "$INSTALL_PROFILE" = "ALL" ]; then
             apt_get install rabbitmq-server
             apt_get install python-kombu
-            sudo service rabbitmq-server start
-            sudo update-rc.d rabbitmq-server defaults
+            apt_get install kafka
         fi
         apt_get install python-sphinx
         # ping requirements
@@ -778,7 +779,6 @@ function install_contrail() {
                 apt_get install neutron-plugin-contrail 
                 apt_get install contrail-config-openstack
                 #apt_get install neutron-plugin-contrail-agent contrail-config-openstack
-                apt_get install contrail-nova-driver 
                 apt_get install contrail-web-core 
                 apt_get install contrail-web-controller
                 apt_get install ifmap-server 
@@ -820,7 +820,7 @@ function install_contrail() {
                 echo "Installing contrail modules"
                 apt_get install contrail-config contrail-lib contrail-utils
                 apt_get install contrail-vrouter-utils contrail-vrouter-agent 
-                apt_get install contrail-vrouter-source contrail-vrouter-dkms contrail-nova-driver  
+                apt_get install contrail-vrouter-source contrail-vrouter-dkms
             fi
 
             change_stage "Build" "install"         
@@ -1034,6 +1034,8 @@ function start_contrail() {
 
         screen_it zk  "cd $CONTRAIL_SRC/third_party/zookeeper-${ZK_VER}; ./bin/zkServer.sh start"
 
+        screen_it kafka "sudo /usr/share/kafka/bin/kafka-server-start.sh /usr/share/kafka/config/server.properties"
+
 	if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
             if is_ubuntu; then
                 screen_it ifmap "cd $CONTRAIL_SRC/build/packages/ifmap-server; java -jar ./irond.jar"
@@ -1179,6 +1181,7 @@ END
 	    --oper add
 
 	screen_it redis-w "sudo redis-server /etc/contrail/redis-webui.conf"
+        screen_it alarm "/usr/bin/python /usr/bin/contrail-alarm-gen --conf_file /etc/contrail/contrail-keystone-auth.conf --conf_file /etc/contrail/contrail-alarm-gen.conf"
 
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then 
             screen_it ui-jobs "cd $CONTRAIL_SRC/contrail-web-core; sudo node jobServerStart.js"
@@ -1255,6 +1258,8 @@ function configure_contrail() {
         replace_contrail_control_conf
         replace_contrail_collector_conf
         replace_contrail_analytics_api_conf
+        replace_contrail_query_engine_conf
+        replace_contrail_alarm_gen_conf
         replace_contrail_dns_conf
         replace_irond_basic_auth_users
     fi	        
@@ -1293,12 +1298,14 @@ function stop_contrail() {
         fi
     fi
     (cd $CONTRAIL_SRC/third_party/zookeeper-${ZK_VER}; ./bin/zkServer.sh stop)
+    sudo /usr/share/kafka/bin/kafka-server-stop.sh
     echo_summary "-----------------------STOPPING CONTRAIL--------------------------"
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         screen_stop redis
         screen_stop cass
         screen_stop zk
         screen_stop ifmap
+        screen_stop kafka
         screen_stop disco
         screen_stop apiSrv
         screen_stop schema
@@ -1310,6 +1317,7 @@ function stop_contrail() {
         screen_stop named
         screen_stop dns
         screen_stop redis-w
+        screen_stop alarm
         screen_stop ui-jobs
         screen_stop ui-webs
     fi

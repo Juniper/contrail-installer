@@ -223,7 +223,7 @@ function start_sanity_script()
             sudo iptables --flush
             sleep 15
             simplegateway_report_file=$CLONE_DIR/sanity_status/Opencontrail_simplegateway_status
-            if [[ -f $report_file ]] ; then
+            if [[ -f $simplegateway_report_file ]] ; then
                 rm $simplegateway_report_file
             fi
 

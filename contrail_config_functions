@@ -56,7 +56,7 @@ function replace_api_server_conf()
         check_replace_value $file DEFAULTS listen_port 8082
         check_replace_value $file DEFAULTS log_file '/var/log/contrail/api.log'
         check_replace_value $file DEFAULTS disc_server_port 5998
-        check_replace_value $file DEFAULTS auth keystone  
+        # check_replace_value $file DEFAULTS auth keystone
         check_replace_value $file DEFAULTS redis_server_port 6379 
     fi
 
@@ -385,6 +385,7 @@ function replace_contrail_analytics_api_conf()
 
     check_replace_value $file DEFAULTS log_file '/var/log/contrail/contrail-analytics-api.log'
     check_replace_value $file DEFAULTS host_ip $COLLECTOR_IP
+    check_replace_value $file DEFAULTS aaa_mode "no-auth"
 
     cassandra_server=""
     for ip in ${CASSANDRA_IP_LIST[@]};
@@ -396,6 +397,52 @@ function replace_contrail_analytics_api_conf()
     check_replace_value $file DISCOVERY disc_server_ip $DISCOVERY_IP
     check_replace_value $file DISCOVERY server $DISCOVERY_IP
     check_replace_value $file DISCOVERY port 5998
+}
+
+function replace_contrail_query_engine_conf()
+{
+    file="/etc/contrail/contrail-query-engine.conf"
+
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}""$ip":9042 "
+    done
+
+    check_replace_value $file DEFAULT hostip $COLLECTOR_IP
+    check_replace_value $file DEFAULT cassandra_server_list $cassandra_server
+}
+
+function replace_contrail_alarm_gen_conf()
+{
+    file="/etc/contrail/contrail-alarm-gen.conf"
+
+    kafka_server=""
+    for ip in ${KAFKA_IP_LIST[@]};
+    do
+        kafka_server=${kafka_server}""$ip":9092 "
+    done
+
+    zookeeper_server=""
+    for ip in ${ZOOKEEPER_IP_LIST[@]};
+    do
+        zookeeper_server=${zookeeper_server}""$ip":2181,"
+    done
+    zookeeper_server=${zookeeper_server::-1}
+
+    rabbitmq_server=""
+    for ip in ${RABBITMQ_IP_LIST[@]};
+    do
+        rabbitmq_server=${rabbitmq_server}""$ip" ,"
+    done
+
+    check_replace_value $file DEFAULTS host_ip $COLLECTOR_IP
+    check_replace_value $file DEFAULTS kafka_broker_list $kafka_server
+    check_replace_value $file DEFAULTS zk_list $zookeeper_server
+    check_replace_value $file DEFAULTS rabbitmq_server_list $rabbitmq_server
+    check_replace_value $file DEFAULTS rabbitmq_port 5672
+    check_replace_value $file DISCOVERY disc_server_ip $DISCOVERY_IP
+    check_replace_value $file DISCOVERY dis_server_port 5998
 }
 
 function replace_contrail_dns_conf()
