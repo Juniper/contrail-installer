@@ -797,6 +797,20 @@ function replace_irond_basic_auth_users()
       done
 }
 
+function write_openstackrc_file()
+{
+    file="/etc/contrail/openstackrc"
+    if [[ -f $file ]]; then
+        rm $file
+    fi
+
+    echo "export OS_USERNAME=$CONTRAIL_ADMIN_USERNAME" >> $file
+    echo "export OS_PASSWORD=$ADMIN_PASSWORD" >> $file
+    echo "export OS_TENANT_NAME=$CONTRAIL_ADMIN_TENANT" >> $file
+    echo "export OS_AUTH_URL=http://127.0.0.1:5000/v2.0/" >> $file
+    echo "export OS_NO_CACHE=1" >> $file
+}
+
 function write_default_pmac()
 {
     file="/etc/contrail/default_pmac"

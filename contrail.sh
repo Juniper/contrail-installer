@@ -429,6 +429,7 @@ function download_python_dependencies {
 
     pip_install --upgrade six
     pip_install cassandra-driver kafka
+    pip_install consistent_hash
 }
 
 function repo_initialize {
@@ -1268,6 +1269,7 @@ function configure_contrail() {
     write_ifcfg-vhost0
     write_default_pmac 
     write_qemu_conf
+    write_openstackrc_file
     fixup_config_files
     echo_summary "-----------------------CONFIGURE PHASE ENDED-----------------------"
 }
