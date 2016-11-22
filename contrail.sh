@@ -488,6 +488,21 @@ function repo_initialize_backup {
     fi
 }
 
+# workaround to prevent devstack from uninstalling contrail installed version of paste
+# Contrail installs paste v1.7.5.1 and deploy v1.5.2-1. Devstack wants Paste v2.0.2 so it
+# uninstalls paste v1.7.5.1 and also removes deploy in the process due to
+# rm /usr/lib/python2.7/dist-packages/paste. Instaling paste v2.0.3 from a somewhat
+# standard places doesn't work because devstack requires paste==2.0.2. Go figure.
+function upgrade_python_paste {
+    echo "Downloading python-paste"
+    if is_ubuntu; then
+        #wget http://http.us.debian.org/debian/pool/main/p/paste/python-paste_2.0.3+dfsg-4_all.deb
+        #sudo dpkg -i python-paste_2.0.3+dfsg-4_all.deb
+        wget http://mirror2.tuxinator.org/deepin/pool/main/p/paste/python-paste_2.0.2+dfsg-1_all.deb
+        sudo dpkg -i python-paste_2.0.2+dfsg-1_all.deb
+    fi
+}
+
 function download_cassandra_cpp_drivers {
     echo "Downloading cassanadra CPP drivers"
     if is_ubuntu; then
@@ -795,6 +810,9 @@ function install_contrail() {
             download_cassandra
             rabbit_setuser "$RABBIT_USER" "$RABBIT_PASSWORD"
             download_zookeeper
+            # handle paste requirement mismatch between contrail (1.7.5.1) and devstack (2.0.2+)
+            upgrade_python_paste
+
             change_stage "Build" "install"
             
        fi
