@@ -1147,7 +1147,7 @@ function start_contrail() {
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
             sudo $CONTRAIL_SRC/build/$TARGET/vrouter/utils/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
         else
-            sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:01:00:5e:00:00
+            sudo /usr/bin/vif --create $CONTRAIL_VGW_INTERFACE --mac 00:00:5e:00:01:00
         fi            
         sudo ifconfig $CONTRAIL_VGW_INTERFACE up
         sudo route add -net $CONTRAIL_VGW_PUBLIC_SUBNET dev $CONTRAIL_VGW_INTERFACE
