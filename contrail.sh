@@ -1122,7 +1122,7 @@ function start_contrail() {
         admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
 
         # dns
-        screen_it dns "/usr/bin/contrail-dns --conf_file /etc/contrail/dns/contrail-dns.conf"
+        screen_it dns "sudo /usr/bin/contrail-dns --conf_file /etc/contrail/dns/contrail-dns.conf"
         screen_it named "sudo /usr/bin/contrail-named -f -c /etc/contrail/dns/contrail-named.conf"
 
         #provision control

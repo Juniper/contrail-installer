@@ -471,6 +471,8 @@ function replace_contrail_dns_conf()
     check_replace_value $file DEFAULT rndc_secret $rndc_secret
     check_replace_value $file DEFAULT rndc_config_file 'contrail-rndc.conf'
 
+    sudo cp $file /etc/contrail/contrail-dns.conf
+
     # log file must be created with correct permissions for named to start
     touch $named_log
     sudo chown $(id -u):root $named_log
