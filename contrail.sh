@@ -428,7 +428,7 @@ function download_python_dependencies {
     fi
 
     pip_install --upgrade six
-    pip_install cassandra-driver kafka
+    pip_install cassandra-driver kafka-python==1.0.1
     pip_install consistent_hash
 }
 
@@ -1267,6 +1267,7 @@ function configure_contrail() {
     #invoke functions to change the files
     if [ "$INSTALL_PROFILE" = "ALL" ]; then
         replace_cassandra_conf
+        replace_kafka_conf
         replace_api_server_conf
         replace_contrail_plugin_conf
         replace_contrail_schema_conf

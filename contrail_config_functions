@@ -20,6 +20,15 @@ function replace_cassandra_conf()
     sudo sed -i -e 's/seeds:.*/seeds: "'$seeds'"/' /etc/cassandra/cassandra.yaml
 }
 
+function replace_kafka_conf()
+{
+    file="/usr/share/kafka/config/server.properties"
+
+    sudo sed -i 's/^#port=9092/port=9092/g' $file
+    sudo sed -i 's/^#advertised.host.name=.*/advertised.host.name=127.0.0.1/g' $file
+    sudo sed -i 's/^listeners=\(.*\)/#listeners=\1/g' $file
+}
+
 
 function replace_api_server_conf()
 {
@@ -371,9 +380,16 @@ function replace_contrail_collector_conf()
         COLLECTOR_IP="127.0.0.1"
     fi
 
+    kafka_server=""
+    for ip in ${KAFKA_IP_LIST[@]};
+    do
+        kafka_server=${kafka_server}""$ip":9092 "
+    done
+
     check_replace_value $file DEFAULT log_file '/var/log/contrail/contrail-collector.log'
     check_replace_value $file DEFAULT log_local 1
     check_replace_value $file DEFAULT cassandra_server_list $cassandra_server
+    check_replace_value $file DEFAULT kafka_broker_list $kafka_server
     check_replace_value $file DEFAULT hostip $COLLECTOR_IP
     check_replace_value $file DEFAULT hostname `hostname`
     check_replace_value $file DISCOVERY server $DISCOVERY_IP
