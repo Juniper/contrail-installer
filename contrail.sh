@@ -313,7 +313,7 @@ function download_dependencies {
         apt_get update
 
         if [[ "$CONTRAIL_DEFAULT_INSTALL" != "True" ]]; then
-            apt_get install patch scons flex bison make vim unzip
+            apt_get install patch scons flex bison make vim unzip cmake
             apt_get install libexpat-dev libgettextpo0 libcurl4-openssl-dev
             apt_get install python-dev autoconf automake build-essential libtool protobuf-compiler libprotobuf-dev
             apt_get install libevent-dev libxml2-dev libxslt-dev librdkafka-dev
@@ -356,7 +356,7 @@ function download_dependencies {
             sudo rpm -Uvh epel-release-7-5.noarch.rpm
         fi
        
-        yum_install patch scons flex bison make vim bzip2 unzip
+        yum_install patch scons flex bison make vim bzip2 unzip cmake
         yum_install expat-devel gettext-devel curl-devel
         yum_install gcc-c++ python-devel autoconf automake libtool
         yum_install protobuf-compiler protobuf protobuf-devel
