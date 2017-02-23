@@ -344,6 +344,12 @@ function replace_contrail_control_conf()
         COLLECTOR_IP="127.0.0.1"
     fi
 
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}""$ip":9042 "
+    done
+
     if [ $USE_DISCOVERY = "False" ]; then
         check_replace_value $file  IFMAP server_url https://$IFMAP_IP:$port
     else
@@ -351,6 +357,7 @@ function replace_contrail_control_conf()
     fi
     check_replace_value $file  IFMAP user $CONTROL_IP
     check_replace_value $file  IFMAP password $CONTROL_IP
+    check_replace_value $file  IFMAP config_db_server_list $cassandra_server
     check_replace_value $file  DISCOVERY server $DISCOVERY_IP
     check_replace_value $file  DISCOVERY port 5998 
     if [ $USE_DISCOVERY = "False" ]; then
