@@ -208,9 +208,9 @@ CONTRAIL\_INSTALLER\_BRANCH – The branch of contrail-installer to be cloned. D
 
 ENABLE\_BINARY – Set to TRUE for Binary installation and False for source code installation. If set to False, add the following entries in sources.list for installation of packages required for installation.
 
-debhttp://ppa.launchpad.net/opencontrail/ppa/ubuntutrustymain
+debhttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
 
-deb-srchttp://ppa.launchpad.net/opencontrail/ppa/ubuntutrustymain
+deb-srchttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
 
 LAUNCHPAD\_BRANCH – If ENABLE\_BINARY is set to True, uncomment and set this to appropriate packages. Default being sanapshots or else this can be uncommented.
 
@@ -384,10 +384,10 @@ Follow the steps below to launch COMPUTE only role on other physical nodes or VM
 
     DATABASE\_TYPE=mysql
 
-    \# repo proto is https or (default) ssh. Leave commented for ssh 
+    \# repo proto is https or (default) ssh. Leave commented for ssh   
     \#CONTRAIL\_REPO\_PROTO=https
 
-    \# proto for openstack bits. Use HTTPS if git is firewalled 
+    \# proto for openstack bits. Use HTTPS if git is firewalled   
     GIT\_BASE=https://git.openstack.org
 
     \# use contrail VIF driver with NOVA   
