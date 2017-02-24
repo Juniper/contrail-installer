@@ -249,57 +249,94 @@ This model of deployment contains multiple nodes with all configured in one node
 Follow the steps to to launch opencontrail and devstack manually on controller node:
 
 1. Download contrail-installer on opencontrail installer node from github.
+
     git clone git@github.com:Juniper/contrail-installer
 
 2. Copy the localrc file and update it with required keywords
+
     cd contrail-installer
+
     cp samples/localrc-all localrc
 
     Set the required fields in the localrc file:
+
     CONTRAIL\_DEFAULT\_INSTALL - Set this to True for installation from OpenContrail binary packages. When set to False, source from trunk OpenContrail will be downloaded and compiled. When this flag is set to False, add the following entries in sources.list for installation of packages required for installation.
+
     debhttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
+
     deb-srchttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
 
     LAUNCHPAD\_BRANCH=PPA - Applicable only when CONTRAIL\_DEFAULT\_INSTALL is set to True. It specifies to use released binary packages for installation. Default is to use latest snapshots as this knob is commented out by default in sample localrc.
+
     PHYSICAL\_INTERFACE - This is external interface Vrouter should bind to. It should have a valid IP address configured. For example eth0
+
     INSTALL\_PROFILE - Set this to ALL to for an all in one node. You can specify it to a particular role e.g. COMPUTE to make the node act only as compute node.
+
     USE\_SCREEN - Set this to True to launch contrail modules in a screen session called &quot;contrail&quot;. Connect to screen session for any troubleshooting of contrail modules.
+
     LOGFILE - Specify logfile for contrail.sh runs. By default this is log/contrail.log in contrail-installer directory
 
     i. Follow the below steps to launch opencontrail:
+
         contrail.sh build
+
         contrail.sh install
+
         contrail.sh configure
+
         contrail.sh start
 
+
     ii. Download devstack from github and checkout the stable supported devstack release.
+
         git clone –b stable/mitaka https://github.com/openstack-dev/devstack.git
+
     iii. Copy the localrc file and update the physical interface info and copy the contrail neutron plugins to devstack neutron plugin folder of devstack.
+
         cd devstack
+
         cp samples/localrc-all localrc
+
         Update localrc with correct PHYSICAL\_INTERFACE value
+
     iv. A glue file is needed in the interim till it is upstreamed to devstack
+
         cp ~/contrail-installer/devstack/lib/neutron\_plugins/opencontrail lib/neutron\_plugins/
+
     v. Run stack.sh
 
+
 **Launching COMPUTE ONLY role on other nodes/VM**
+
 Follow the steps below to launch COMPUTE role on other physical nodes or VMs:
 
 1. Download contrail-installer on opencontrail installer node from github.
+
     git clone git@github.com:Juniper/contrail-installer
 
 2. Edit localrc as shown below:
+
     cd contrail-installer
+
     cp samples/localrc-all localrc
+
     INSTALL\_PROFILE =COMPUTE
+
     SERVICE\_HOST=&lt;controller -ip&gt;
+
     CONTROL\_IP=&lt;controller-ip&gt;
 
+
 3. Follow the below steps to launch opencontrail:
+
     contrail.sh build
+
     contrail.sh install
+
     contrail.sh configure
+
     contrail.sh start
+
 
 4. Download devstack from github and checkout the supported devstack release
 
@@ -310,35 +347,67 @@ Follow the steps below to launch COMPUTE role on other physical nodes or VMs:
     cd devstack, open new file localrc and add the following entry and save the file
 
     \# change this to master/controller node&#39;s ip
+
     SERVICE\_HOST=&lt;controller-ip&gt;# control1
+
     \# the interface that contrail&#39;s vhost0 should take over PHYSICAL\_INTERFACE=eth0
+
     Q\_PLUGIN=opencontrail STACK\_DIR=$(cd $(dirname $0) &amp;&amp; pwd)
+
     \# log all screen output to this directory SCREEN\_LOGDIR=$STACK\_DIR/log/screens LOG=True 
+
     DEBUG=True
+
     LOGFILE=$STACK\_DIR/log/stack.log
+
     LOGDAYS=1
+
     ENABLED\_SERVICES=n-cpu,rabbit,g-api,neutron,n-novnc,n-xvnc Q\_USE\_DEBUG\_COMMAND=True
+
     PHYSICAL\_NETWORK=default
+
     MYSQL\_HOST=$SERVICE\_HOST
+
     RABBIT\_HOST=$SERVICE\_HOST
+
     Q\_HOST=$SERVICE\_HOST
+
     GLANCE\_HOSTPORT=$SERVICE\_HOST:9292 DATABASE\_PASSWORD=contrail123
+
     RABBIT\_PASSWORD=contrail123
+
     SERVICE\_TOKEN=contrail123
+
     SERVICE\_PASSWORD=contrail123
+
     ADMIN\_PASSWORD=contrail123
+
     DATABASE\_TYPE=mysql
+
     \# repo proto is https or (default) ssh. Leave commented for ssh #     CONTRAIL\_REPO\_PROTO=https
+
     \# proto for openstack bits. Use HTTPS if git is firewalled   GIT\_BASE=https://git.openstack.org
+
     \# use contrail VIF driver with NOVA   NOVA\_VIF\_DRIVER=nova\_contrail\_vif.contrailvif.VRouterVIFDriver
 
+
 6. cp ~/contrail-installer/devstack/lib/neutron\_plugins/opencontrail lib/neutron\_plugins/
+
 7. run stack.sh
+
 8. Verify if the compute nodes are up by:
+
     a. running contrail-status command from contrail-installer/utilities folder
+
     b. login to contrail-webui and check if the dashboard for the number of instances of compute nodes.
+
 9. Run sanity from controller node to verify the TCs
+
     cd ~/contrail-installer/utilities
+
     export CONTRAIL\_DIR=~/contrail-installer
+
     export DEVSTACK\_DIR=~/devstack
+
     ./contrail-sanity
+
