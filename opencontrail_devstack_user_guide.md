@@ -306,9 +306,9 @@ Follow the steps to to launch opencontrail and devstack manually on controller n
     v. Run stack.sh
 
 
-**Launching COMPUTE ONLY role on other nodes/VM**
+**Launching COMPUTE ONLY role on other nodes/VMs**
 
-Follow the steps below to launch COMPUTE role on other physical nodes or VMs:
+Follow the steps below to launch COMPUTE only role on other physical nodes or VMs:
 
 1. Download contrail-installer on opencontrail installer node from github.
 
@@ -322,7 +322,7 @@ Follow the steps below to launch COMPUTE role on other physical nodes or VMs:
 
     INSTALL\_PROFILE =COMPUTE
 
-    SERVICE\_HOST=&lt;controller -ip&gt;
+    SERVICE\_HOST=&lt;controller-ip&gt;
 
     CONTROL\_IP=&lt;controller-ip&gt;
 
@@ -384,12 +384,14 @@ Follow the steps below to launch COMPUTE role on other physical nodes or VMs:
 
     DATABASE\_TYPE=mysql
 
-    \# repo proto is https or (default) ssh. Leave commented for ssh #     CONTRAIL\_REPO\_PROTO=https
+    \# repo proto is https or (default) ssh. Leave commented for ssh 
+    \#CONTRAIL\_REPO\_PROTO=https
 
-    \# proto for openstack bits. Use HTTPS if git is firewalled   GIT\_BASE=https://git.openstack.org
+    \# proto for openstack bits. Use HTTPS if git is firewalled 
+    GIT\_BASE=https://git.openstack.org
 
-    \# use contrail VIF driver with NOVA   NOVA\_VIF\_DRIVER=nova\_contrail\_vif.contrailvif.VRouterVIFDriver
-
+    \# use contrail VIF driver with NOVA   
+    NOVA\_VIF\_DRIVER=nova\_contrail\_vif.contrailvif.VRouterVIFDriver
 
 6. cp ~/contrail-installer/devstack/lib/neutron\_plugins/opencontrail lib/neutron\_plugins/
 
