@@ -416,7 +416,7 @@ Follow the steps below to launch COMPUTE only role on other physical nodes or VM
 
 **Steps to build PPA packages on PPA build machine**
 
-Pre-requisite to built the PPA package is to import pgp key to launchpad account using the instructions mentioned in the below URL:
+Pre-requisite to build the PPA package is to import pgp key to launchpad account using the instructions mentioned in the below URL:
 
 https://help.launchpad.net/YourAccount/ImportingYourPGPKey
 
