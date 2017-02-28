@@ -430,9 +430,9 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
 
     branch=$1
 
-    curdir=`pwd`
+    curdir=\`pwd\`
 
-    key=<launchpad key>
+    key=&lt;launchpad key&gt;
 
     platform="trusty"
 
@@ -444,9 +444,9 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
 
     fi
     
-    git config --global user.name "<user name>"
+    git config --global user.name "&lt;user name&gt;"
 
-    git config --global user.email "<user email-id>"
+    git config --global user.email "&lt;user email-id&gt;"
 
     repo init -u git@github.com:Juniper/contrail-vnc -b $branch
 
@@ -480,11 +480,11 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
     
     cd $curdir/build/packages
     
-    dput ppa:<ppa location> contrail_$release~`date +%Y%m%d`~$platform\_source.changes
+    dput ppa:&lt;ppa location&gt; contrail_$release~`date +%Y%m%d`~$platform\_source.changes
 
-    dput ppa:<ppa location> contrail-web-core_$release~`date +%Y%m%d`~$platform\_source.changes
+    dput ppa:&lt;ppa location&gt; contrail-web-core_$release~`date +%Y%m%d`~$platform\_source.changes
 
-    dput ppa:<ppa location> contrail-web-controller_$release~`date +%Y%m%d`~$platform\_source.changes
+    dput ppa:&lt;ppa location&gt; contrail-web-controller_$release~`date +%Y%m%d`~$platform\_source.changes
 
-    dput ppa:<ppa location> neutron-plugin-contrail_$release~`date +%Y%m%d`~$platform\_source.changes
+    dput ppa:&lt;ppa location&gt; neutron-plugin-contrail_$release~`date +%Y%m%d`~$platform\_source.changes
 
