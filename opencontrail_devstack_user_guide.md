@@ -414,9 +414,10 @@ Follow the steps below to launch COMPUTE only role on other physical nodes or VM
     ./contrail-sanity
 
 
-** Steps to build PPA packages on PPA build machine **
+**Steps to build PPA packages on PPA build machine**
 
 Pre-requisite to built the PPA package is to import pgp key to launchpad account using the instructions mentioned in the below URL:
+
 https://help.launchpad.net/YourAccount/ImportingYourPGPKey
 
 1. Copy the following content into a script and run the script with following parameter:
@@ -425,26 +426,38 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
     where <branch> is contrail maintained branch which could be master/R3.0/R3.0.1.x/R3.2 etc.
     
     Content of the script:
-    #!/bin/bash -xe
+    \#!/bin/bash -xe
 
     branch=$1
+
     curdir=`pwd`
+
     key=<launchpad key>
+
     platform="trusty"
 
     if [[ -z $branch ]]; then
+
         echo "Arguments not given on cmd line!!"
+
         exit 1
+
     fi
     
     git config --global user.name "<user name>"
+
     git config --global user.email "<user email-id>"
+
     repo init -u git@github.com:Juniper/contrail-vnc -b $branch
+
     repo sync
     
     cd third_party
+
     python fetch_packages.py
+
     cd $curdir
+
     release=`cat controller/src/base/version.info`
     
     
@@ -453,18 +466,25 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
     make -f packages.make KEYID=$key VERSION=$release~`date +%Y%m%d`~$platform source-package-contrail
     
     sed -i s/SERIES/$platform/ tools/packages/debian/contrail-web-core/debian/changelog
+
     sed -i s/SERIES/$platform/ tools/packages/debian/contrail-web-controller/debian/changelog
     
     make -f packages.make KEYID=$key VERSION=$release~`date +%Y%m%d`~$platform source-package-contrail-web-core
+
     make -f packages.make KEYID=$key VERSION=$release~`date +%Y%m%d`~$platform source-package-contrail-web-controller
+
     make -f packages.make KEYID=$key VERSION=$release~`date +%Y%m%d`~$platform source-package-neutron-plugin-contrail
+
     
     echo "Build complete, dput PPA!!"
     
     cd $curdir/build/packages
     
     dput ppa:<ppa location> contrail_$release~`date +%Y%m%d`~$platform\_source.changes
+
     dput ppa:<ppa location> contrail-web-core_$release~`date +%Y%m%d`~$platform\_source.changes
+
     dput ppa:<ppa location> contrail-web-controller_$release~`date +%Y%m%d`~$platform\_source.changes
+
     dput ppa:<ppa location> neutron-plugin-contrail_$release~`date +%Y%m%d`~$platform\_source.changes
 
