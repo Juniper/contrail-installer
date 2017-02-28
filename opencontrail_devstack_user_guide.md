@@ -458,7 +458,7 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
 
     cd $curdir
 
-    release=`cat controller/src/base/version.info`
+    release=\`cat controller/src/base/version.info\`
     
     
     sed -i s/libipfix/libipfix-dev/ tools/packages/debian/contrail/debian/control
