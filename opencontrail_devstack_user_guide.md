@@ -422,7 +422,7 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
 
 1. Copy the following content into a script (say create-ppa.sh) and run the script with following parameter:
     
-    ./create-ppa.sh &tl;branch&gt; 
+    ./create-ppa.sh &lt;branch&gt; 
 
     where &lt;branch&gt; is contrail maintained branch which could be master/R3.0/R3.0.1.x/R3.2 etc.
     
@@ -461,6 +461,7 @@ https://help.launchpad.net/YourAccount/ImportingYourPGPKey
     cd $curdir
 
     \#release will be head of the specified branch 
+
     release=\`cat controller/src/base/version.info\`
     
     
