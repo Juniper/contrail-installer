@@ -325,6 +325,12 @@ function replace_contrail_control_conf()
     port=0
     CERT_OPTS="" 
 
+    rabbitmq_server=""
+    for ip in ${RABBITMQ_IP_LIST[@]};
+    do
+        rabbitmq_server=${rabbitmq_server}""$ip":5672  "
+    done
+
     if [[ -n $PUPPET_SERVER ]]; then
         CERTDIR='/var/lib/puppet/ssl'  
     else 
@@ -358,6 +364,9 @@ function replace_contrail_control_conf()
     check_replace_value $file  IFMAP user $CONTROL_IP
     check_replace_value $file  IFMAP password $CONTROL_IP
     check_replace_value $file  IFMAP config_db_server_list $cassandra_server
+    check_replace_value $file  IFMAP rabbitmq_server_list $rabbitmq_server
+    check_replace_value $file  IFMAP rabbitmq_user $RABBIT_USER
+    check_replace_value $file  IFMAP rabbitmq_password $RABBIT_PASSWORD
     check_replace_value $file  DISCOVERY server $DISCOVERY_IP
     check_replace_value $file  DISCOVERY port 5998 
     if [ $USE_DISCOVERY = "False" ]; then
