@@ -64,7 +64,7 @@ This can be done in 2 ways:
 1. Staring Opencontrail and Devstack script separately one after other manually
 2. Using task.sh (under utilities folder in contrail-installer) to install Opencontrail and Devstack automatically and execute basic sanity testcases
 
-**Manual Method to install opencontrail and Devstack:**
+**Section 1. Manual Method to install opencontrail and Devstack:**
 
 OpenContrail uses localrc to contain all local configuration and customizations. Copy the localrc-all file after cloning the contrail-installer from github as shown below:
 
@@ -72,23 +72,13 @@ cd contrail-installer
 
 cp samples/localrc-all localrc
 
-Below are the important keys to be set in the localrc file:
+Update the localrc with the required keys as mentioned above.
 
-CONTRAIL\_DEFAULT\_INSTALL - Set this to True for installation from OpenContrail binary packages. When set to False, source from trunk OpenContrail will be downloaded and compiled. When this flag is set to False, add the following entries in sources.list for installation of packages required for installation.
+if CONTRAIL\_DEFAULT\_INSTALL  is set to false, then building from source requires the following entry in /etc/apt/sources.list to resolve package dependency: 
 
 debhttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
 
 deb-srchttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
-
-LAUNCHPAD\_BRANCH=PPA - Applicable only when CONTRAIL\_DEFAULT\_INSTALL is set to True. It specifies to use released binary packages for installation. Default is to use latest snapshots as this knob is commented out by default in sample localrc.
-
-PHYSICAL\_INTERFACE - This is external interface Vrouter should bind to. It should have a valid IP address configured. For example eth0
-
-INSTALL\_PROFILE - Set this to ALL to for an all in one node. You can specify it to a particular role e.g. COMPUTE to make the node act only as compute node.
-
-USE\_SCREEN - Set this to True to launch contrail modules in a screen session called &quot;contrail&quot;. Connect to screen session for any troubleshooting of contrail modules.
-
-LOGFILE - Specify logfile for contrail.sh runs. By default this is log/contrail.log in contrail-installer directory
 
 Contrail-installer uses contrail.sh to install/launch opencontrail and supports following options:
 
@@ -198,7 +188,7 @@ export DEVSTACK\_DIR=~/devstack
 
 ./contrail-sanity
 
-**Second approach**
+**Section 2: Second approach**
 
 **Automating contrail.sh and devstack (all-in-one Node)**
 
@@ -236,6 +226,14 @@ $ diff auto.conf my.conf
 
 $ ./task.sh my.conf
 
+task.sh performs the following tasks:
+
+1. install opencontrail on the node (either using PPA package or building from source, based on parameters set in auto.conf)
+
+2. install devstack
+
+3. run basic sanity suite to validate the installation.
+
 
 
 **Multi Compute Node Setup**
@@ -246,65 +244,9 @@ This model of deployment contains multiple nodes with all configured in one node
 
 **Launching opencontrail on controller Node.**
 
-Follow the steps to to launch opencontrail and devstack manually on controller node:
+Follow the steps to launch opencontrail and devstack manually on controller node:
 
-1. Download contrail-installer on opencontrail installer node from github.
-
-    git clone git@github.com:Juniper/contrail-installer
-
-2. Copy the localrc file and update it with required keywords
-
-    cd contrail-installer
-
-    cp samples/localrc-all localrc
-
-    Set the required fields in the localrc file:
-
-    CONTRAIL\_DEFAULT\_INSTALL - Set this to True for installation from OpenContrail binary packages. When set to False, source from trunk OpenContrail will be downloaded and compiled. When this flag is set to False, add the following entries in sources.list for installation of packages required for installation.
-
-    debhttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
-
-    deb-srchttp://ppa.launchpad.net/opencontrail/ppa/ubuntu trusty main
-
-    LAUNCHPAD\_BRANCH=PPA - Applicable only when CONTRAIL\_DEFAULT\_INSTALL is set to True. It specifies to use released binary packages for installation. Default is to use latest snapshots as this knob is commented out by default in sample localrc.
-
-    PHYSICAL\_INTERFACE - This is external interface Vrouter should bind to. It should have a valid IP address configured. For example eth0
-
-    INSTALL\_PROFILE - Set this to ALL to for an all in one node. You can specify it to a particular role e.g. COMPUTE to make the node act only as compute node.
-
-    USE\_SCREEN - Set this to True to launch contrail modules in a screen session called &quot;contrail&quot;. Connect to screen session for any troubleshooting of contrail modules.
-
-    LOGFILE - Specify logfile for contrail.sh runs. By default this is log/contrail.log in contrail-installer directory
-
-    i. Follow the below steps to launch opencontrail:
-
-        contrail.sh build
-
-        contrail.sh install
-
-        contrail.sh configure
-
-        contrail.sh start
-
-
-    ii. Download devstack from github and checkout the stable supported devstack release.
-
-        git clone –b stable/mitaka https://github.com/openstack-dev/devstack.git
-
-    iii. Copy the localrc file and update the physical interface info and copy the contrail neutron plugins to devstack neutron plugin folder of devstack.
-
-        cd devstack
-
-        cp samples/localrc-all localrc
-
-        Update localrc with correct PHYSICAL\_INTERFACE value
-
-    iv. A glue file is needed in the interim till it is upstreamed to devstack
-
-        cp ~/contrail-installer/devstack/lib/neutron\_plugins/opencontrail lib/neutron\_plugins/
-
-    v. Run stack.sh
-
+Install opencontrail and devstack on one node (follow the same instructions mentioned in Section 1, all-in-one mode)
 
 **Launching COMPUTE ONLY role on other nodes/VMs**
 
@@ -403,7 +345,9 @@ Follow the steps below to launch COMPUTE only role on other physical nodes or VM
 
     b. login to contrail-webui and check if the dashboard for the number of instances of compute nodes.
 
-9. Run sanity from controller node to verify the TCs
+9. Repeat the above steps if more compute nodes are required as part of the cluster.
+
+10. Run sanity from controller node to verify the TCs
 
     cd ~/contrail-installer/utilities
 
