@@ -149,7 +149,7 @@ function check_vm_status()
     report_file=$1
     vm_status_index=$(($vm_name_index+1))
     vm_network_index=$(($vm_network_index+1))
-    vm_ip=(`nova list --fields name,status,Networks|awk '{print $4,$6,$8}'`)
+    vm_ip=(`nova list --fields name,status,networks|awk '{print $4,$6,$8}'`)
     while [[ $vm_name_index -le ${#vm_ip[@]} ]]
     do
         vm_name=${vm_ip[$vm_name_index]}

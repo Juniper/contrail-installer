@@ -16,7 +16,8 @@ ENABLE_CI=${ENABLE_CI:-False}
 DEVSTACK_CLONE_URL=${DEVSTACK_CLONE_URL:-"https://github.com/openstack-dev/devstack.git"}
 DEVSTACK_CLONE_BRANCH=${DEVSTACK_CLONE_BRANCH:-"stable/juno"}
 RECLONE=${RECLONE:-False}
-run_sanity=${run_sanity:-False}      
+#run_sanity=${run_sanity:-False}      
+RUN_SANITY=${RUN_SANITY:-False}
 NETWORK_NAME=${NETWORK_NAME:-net}
 SUBNET_NAME=${SUBNET_NAME:-subnet} 
 SUBNET_CIDR=${SUBNET_CIDR:-11.0.0.0/24}
@@ -401,6 +402,7 @@ function start_devstack()
         fi
         HOST_IP=$(get_management_ip vhost0)
         echo "HOST_IP=$HOST_IP" >> ./localrc 
+        echo "enable_service h-eng h-api h-api-cfn h-api-cw" >> ./localrc
         #./unstack.sh
         ./stack.sh  
         _stack_status=$?
@@ -409,10 +411,13 @@ function start_devstack()
         else
             cd $CLONE_DIR
         fi
-        source sanity.sh
-        start_sanity_script
+
+        if [[ "$RUN_SANITY" == "True" ]]; then
+            source sanity.sh
+            start_sanity_script
         
-        _RETURN_STATUS=$(status_return $_stack_status $STACK_ERR_CODE)
+            _RETURN_STATUS=$(status_return $_stack_status $STACK_ERR_CODE)
+        fi
     fi
 }
 
