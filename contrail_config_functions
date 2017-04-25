@@ -54,7 +54,6 @@ function replace_api_server_conf()
     check_replace_value $file DEFAULTS ifmap_server_ip $IFMAP_IP
     check_replace_value $file DEFAULTS ifmap_server_port $port
     check_replace_value $file DEFAULTS multi_tenancy $MULTI_TENANCY
-    check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
     check_replace_value $file DEFAULTS zk_server_port 2181
@@ -148,7 +147,6 @@ function replace_contrail_schema_conf()
     check_replace_value $file DEFAULTS ifmap_server_ip $CFGM_IP
     check_replace_value $file DEFAULTS ifmap_server_port $port
     check_replace_value $file DEFAULTS api_server_ip $CFGM_IP
-    check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
     check_replace_value $file DEFAULTS zk_server_port 2181
@@ -196,8 +194,6 @@ function replace_svc_monitor_conf()
     check_replace_value $file DEFAULTS ifmap_server_ip $CFGM_IP
     check_replace_value $file DEFAULTS ifmap_server_port $port
     check_replace_value $file DEFAULTS api_server_ip $CFGM_IP
-    check_replace_value $file DEFAULTS disc_server_ip $DISCOVERY_IP
-    check_replace_value $file DEFAULTS disc_server_port 5998
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server 
     check_replace_value $file DEFAULTS zk_server_ip $zookeeper_server
     check_replace_value $file DEFAULTS zk_server_port 2181
@@ -356,24 +352,11 @@ function replace_contrail_control_conf()
         cassandra_server=${cassandra_server}""$ip":9042 "
     done
 
-    if [ $USE_DISCOVERY = "False" ]; then
-        check_replace_value $file  IFMAP server_url https://$IFMAP_IP:$port
-    else
-        inicomment $file IFMAP server_url
-    fi
-    check_replace_value $file  IFMAP user $CONTROL_IP
-    check_replace_value $file  IFMAP password $CONTROL_IP
-    check_replace_value $file  IFMAP config_db_server_list $cassandra_server
-    check_replace_value $file  IFMAP rabbitmq_server_list $rabbitmq_server
-    check_replace_value $file  IFMAP rabbitmq_user $RABBIT_USER
-    check_replace_value $file  IFMAP rabbitmq_password $RABBIT_PASSWORD
-    check_replace_value $file  DISCOVERY server $DISCOVERY_IP
-    check_replace_value $file  DISCOVERY port 5998 
-    if [ $USE_DISCOVERY = "False" ]; then
-        check_replace_value $file  DEFAULT collectors $COLLECTOR_IP:8086
-    else
-        inicomment $file DEFAULT collectors
-    fi
+    check_replace_value $file  CONFIGDB config_db_server_list $cassandra_server
+    check_replace_value $file  CONFIGDB rabbitmq_server_list $rabbitmq_server
+    check_replace_value $file  CONFIGDB rabbitmq_user $RABBIT_USER
+    check_replace_value $file  CONFIGDB rabbitmq_password $RABBIT_PASSWORD
+    check_replace_value $file  DEFAULT collectors $COLLECTOR_IP:8086
     check_replace_value $file  DEFAULT hostname `hostname`
     check_replace_value $file  DEFAULT log_file '/var/log/contrail/control.log'
     check_replace_value $file  DEFAULT hostip $CONTROL_IP
@@ -408,7 +391,6 @@ function replace_contrail_collector_conf()
     check_replace_value $file DEFAULT kafka_broker_list $kafka_server
     check_replace_value $file DEFAULT hostip $COLLECTOR_IP
     check_replace_value $file DEFAULT hostname `hostname`
-    check_replace_value $file DISCOVERY server $DISCOVERY_IP
 }
 
 function replace_contrail_analytics_api_conf()
@@ -426,9 +408,6 @@ function replace_contrail_analytics_api_conf()
     done
 
     check_replace_value $file DEFAULTS cassandra_server_list $cassandra_server
-    check_replace_value $file DISCOVERY disc_server_ip $DISCOVERY_IP
-    check_replace_value $file DISCOVERY server $DISCOVERY_IP
-    check_replace_value $file DISCOVERY port 5998
 }
 
 function replace_contrail_query_engine_conf()
@@ -473,27 +452,38 @@ function replace_contrail_alarm_gen_conf()
     check_replace_value $file DEFAULTS zk_list $zookeeper_server
     check_replace_value $file DEFAULTS rabbitmq_server_list $rabbitmq_server
     check_replace_value $file DEFAULTS rabbitmq_port 5672
-    check_replace_value $file DISCOVERY disc_server_ip $DISCOVERY_IP
-    check_replace_value $file DISCOVERY dis_server_port 5998
 }
 
 function replace_contrail_dns_conf()
 {
-    file="/etc/contrail/dns/contrail-dns.conf"
+    file="/etc/contrail/contrail-dns.conf"
     named_log="/var/log/contrail/contrail-named.log"
     rndc_secret="xvysmOR8lnUQRBcunkC6vg=="
-    
-    if [ $USE_DISCOVERY = "False" ]; then
-        check_replace_value $file IFMAP server_url $IFMAP_IP
-        check_replace_value $file DEFAULT collectors $COLLECTOR_IP
-    else
-        inicomment $file IFMAP server_url
-        inicomment $file DEFAULT collectors
+
+    rabbitmq_server=""
+    for ip in ${RABBITMQ_IP_LIST[@]};
+    do
+        rabbitmq_server=${rabbitmq_server}""$ip":5672  "
+    done
+
+    if [[ $CONTROL_IP = "localhost" ]]; then
+        CONTROL_IP="127.0.0.1"
     fi
-    check_replace_value $file IFMAP user ${CONTROL_IP}.dns
-    check_replace_value $file IFMAP password ${CONTROL_IP}.dns
-    check_replace_value $file DISCOVERY server $DISCOVERY_IP
-    check_replace_value $file DISCOVERY port 5998
+    if [[ $COLLECTOR_IP = "localhost" ]]; then
+        COLLECTOR_IP="127.0.0.1"
+    fi
+
+    cassandra_server=""
+    for ip in ${CASSANDRA_IP_LIST[@]};
+    do
+        cassandra_server=${cassandra_server}""$ip":9042 "
+    done
+
+    check_replace_value $file  CONFIGDB config_db_server_list $cassandra_server
+    check_replace_value $file  CONFIGDB rabbitmq_server_list $rabbitmq_server
+    check_replace_value $file  CONFIGDB rabbitmq_user $RABBIT_USER
+    check_replace_value $file  CONFIGDB rabbitmq_password $RABBIT_PASSWORD
+    check_replace_value $file  DEFAULT collectors $COLLECTOR_IP:8086
     check_replace_value $file DEFAULT hostip $CONTROL_IP
     check_replace_value $file DEFAULT hostname `hostname`
     check_replace_value $file DEFAULT log_file '/var/log/contrail/contrail-dns.log'
@@ -777,13 +767,15 @@ function replace_contrail_vrouter_agent_conf()
     else
         inicomment $file COLLECTOR server
     fi
-    check_replace_value $file  DISCOVERY server $DISCOVERY_IP
 
     if [ $CONTRAIL_VGW_INTERFACE -a $CONTRAIL_VGW_PUBLIC_SUBNET -a $CONTRAIL_VGW_PUBLIC_NETWORK ]; then
         check_replace_value $file  GATEWAY-0 interface $CONTRAIL_VGW_INTERFACE
         check_replace_value $file  GATEWAY-0 ip_blocks $CONTRAIL_VGW_PUBLIC_SUBNET
         check_replace_value $file  GATEWAY-0 routing_instance $CONTRAIL_VGW_PUBLIC_NETWORK
     fi
+
+    # workaround for bug with resource backup enabled as well as VGW configured
+    check_replace_value $file  RESTART backup_enable false
 }
 
 function replace_irond_basic_auth_users()

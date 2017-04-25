@@ -980,7 +980,7 @@ function pywhere() {
 
 function stop_contrail_services() {
 
-    services=(supervisor-analytics supervisor-control supervisor-config supervisor-vrouter contrail-analytics-api contrail-control contrail-query-engine contrail-vrouter-agent contrail-api contrail-discovery contrail-schema contrail-webui-jobserver contrail-collector contrail-dns contrail-svc-monitor contrail-webui-webserver ifmap-server)
+    services=(supervisor-analytics supervisor-control supervisor-config supervisor-vrouter contrail-analytics-api contrail-control contrail-query-engine contrail-vrouter-agent contrail-api contrail-schema contrail-webui-jobserver contrail-collector contrail-dns contrail-svc-monitor contrail-webui-webserver ifmap-server)
     for service in ${services[@]} 
     do
         sudo service $service stop
@@ -1077,10 +1077,6 @@ function start_contrail() {
         fi
         sleep 2
 
-        # discovery must start after api server because latter creates cassandra CF needed by discovery
-        screen_it disco "$(which contrail-discovery) --conf_file /etc/contrail/contrail-discovery.conf"
-        sleep 2
-
         # earlier releases (2.x for example) schema didn't handle rabbit options
         echo "$CONTRAIL_BRANCH" | grep -q "^R2" || echo "$LAUNCHPAD_BRANCH" | grep -q "^r2"
         if [ $? == 0 ]; then
@@ -1122,7 +1118,7 @@ function start_contrail() {
         admin_tenant=${CONTRAIL_ADMIN_TENANT:-"admin"}
 
         # dns
-        screen_it dns "sudo /usr/bin/contrail-dns --conf_file /etc/contrail/dns/contrail-dns.conf"
+        screen_it dns "sudo /usr/bin/contrail-dns --conf_file /etc/contrail/contrail-dns.conf"
         screen_it named "sudo /usr/bin/contrail-named -f -c /etc/contrail/dns/contrail-named.conf"
 
         #provision control
@@ -1272,7 +1268,6 @@ function configure_contrail() {
         replace_contrail_plugin_conf
         replace_contrail_schema_conf
         replace_svc_monitor_conf
-        replace_discovery_conf
         replace_vnc_api_lib_conf
         replace_ContrailPlugin_conf
         replace_contrail_control_conf
