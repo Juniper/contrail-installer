@@ -14,9 +14,9 @@ stable versions, use appropriate release name.
 
 Currently contrail-installer supports the following:
 
-    contrail-installer: sources master,    devstack: stable/kilo
-    contrail-installer: sources R3.0,      devstack: stable/kilo
-    contrail-installer: packages R2.20,    devstack: stable/kilo
+    contrail-installer: sources master,    devstack: stable/mitaka
+    contrail-installer: sources R3.0,      devstack: stable/mitaka
+    contrail-installer: packages R2.20,    devstack: stable/mitaka
 
 # OpenContrail localrc
 
@@ -30,8 +30,9 @@ CONTRAIL_DEFAULT_INSTALL - Set this to True for installation from OpenContrail b
 packages. When set to False, trunk OpenContrail bits will be downloaded and compiled. 
 
 LAUNCHPAD_BRANCH=PPA - Applicable only when CONTRAIL_DEFAULT_INSTALL is set to True.
-It specifies to use released binary packages for installation. Default is to use 
-latest snapshots as this knob is commented out by default in sample localrc.
+It specifies to use released binary packages for installation instead of compiling and
+building from sources. Default is to use latest snapshots as this knob is commented out
+by default in sample localrc.
 
 PHYSICAL_INTERFACE - This is external interface Vrouter should bind to. It should have
 a valid IP address configured. For example eth0
@@ -66,27 +67,69 @@ Run the following NOT AS ROOT:
     ./contrail.sh configure
     ./contrail.sh start
 
-# OpenContrail+Devstack
+Upon successful run of last command, output similar to below should appear:
 
-Trunk of contrail-installer currently works with stable/kilo
+    #:~/contrail-installer$ 2017-04-26 12:50:29 +++ echo -ne '\015'
+    ++ clean
+    ++ local r=0
+    ++ echo 'exited with status :0'
+    exited with status :0
+    ++ exit 0
 
+This will create a screen names "contrail" with a tab corresponding to each contrail service:
+
+    #:~/contrail-installer$ screen -ls
+    There are screens on:
+        2427.contrail   (04/26/2017 12:48:59 PM)        (Detached)
+    1 Sockets in /var/run/screen/S-jenkins.
+
+![alt text](contrail-screen.png)
+
+# Devstack
+
+Trunk of contrail-installer currently works with stable/mitaka of devstack.
 
     git clone git@github.com:openstack-dev/devstack
+    cd devstack
+    git checkout stable/mitaka
     
-A glue file is needed in the interim till it is upstreamed to devstack
+A glue file is needed for devstack to use Contrail neutron plugin
 
     cp ~/contrail-installer/devstack/lib/neutron_plugins/opencontrail lib/neutron_plugins/
 
-Use sample localrc:
+Use provided sample localrc for devstack. Note that this disables some neutron networking services
+because these services are provided by Contrail networking plugin. Edit localrc as needed to reflect
+your physical interface and host:
 
     cp ~/contrail-installer/devstack/samples/localrc-all localrc
+    HOST_IP=<your host ip>
+    PHYSICAL_INTERFACE=eth0
 
 Run stack.sh
-
-    cd devstack
-    git checkout stable/kilo
-    (edit localrc as needed - physical interface, host ip ...)
     ./stack.sh
+
+if devstack installs successfully, output similar to following will be shown:
+
+    ========================
+    DevStack Components Timed
+    ========================
+
+    run_process - 71 secs
+    test_with_retry - 7 secs
+    apt-get-update - 17 secs
+    pip_install - 269 secs
+    restart_apache_server - 10 secs
+    wait_for_service - 29 secs
+    apt-get - 9 secs
+
+    This is your host IP address: 192.168.0.175
+    This is your host IPv6 address: ::1
+    Horizon is now available at http://192.168.0.175/dashboard
+    Keystone is serving at http://192.168.0.175:5000/
+    The default users are: admin and demo
+    The password: contrail123
+
+![alt text](devstack-screen.png)
 
 # Restarting OpenContrail+Devstack
 
@@ -109,6 +152,7 @@ below
     cd ~/devstack
     ./stack.sh
 
+
 # Verify installation
     1) screen -x contrail and run through various tabs to see various contrail modules are running
     2) Run utilities/contrail-status to see if all services are running
@@ -123,6 +167,10 @@ Follow the steps below:
     export CONTRAIL_DIR=~/contrail-installer
     export DEVSTACK_DIR=~/devstack
     ./contrail-sanity
+
+# Opencontrail UI
+OpenContrail UI runs on http port 8080. It will automatically redirect to https port 8143.
+username is "admin", and the password is mentioned in the localrc (default: "contrail123")
 
 # Automating contrail.sh and devstack
 contrail-installer/utilities/task.sh attempts to automate steps required by sequential runs
